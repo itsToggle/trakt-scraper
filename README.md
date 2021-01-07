@@ -1,6 +1,8 @@
 # trakt-scraper
 A Powershell script to manage your media collection through trakt, with torrent scraping and debrid support.
 
+![alt text](https://i.ibb.co/p2MT1VM/Screenshot-20210107-112846-Parsec.jpg)
+
 - This script is not going to be maintained -
 
 What it does:
