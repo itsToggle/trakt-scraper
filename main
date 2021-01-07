@@ -1,8 +1,4 @@
-$trakt_client_id = "***"
-$trakt_client_secret = "***"
-$trakt_access_token = "***"
-$real_debrid_token ='***'
-$premiumize_api_key = "***"
+Import-Module Graphical
 
 function get_token {
 
@@ -44,13 +40,21 @@ Write-Output $poll_token_response
 
 }
 
+$traktscraper = {
+
+$trakt_client_id = "***"
+$trakt_client_secret = "***"
+$trakt_access_token = "***"
+$real_debrid_token ='***'
+$premiumize_api_key = "***"
+
+#. .\html_creator.ps1
+
 function main {
 
     $timer =  [system.diagnostics.stopwatch]::StartNew()
 
     $count = 0
-
-    $counters = @()
 
     $countRD = 0
 
@@ -88,7 +92,7 @@ function main {
       
             Foreach ($entry in $get_watchlist_response) {
                
-            if(-Not $trakt_new.title.Contains($entry.show.title)) {
+            if(-Not $trakt.title.Contains($entry.show.title)) {
             
                     $trakt += $entry.show
 
@@ -109,9 +113,13 @@ function main {
 
                 $show | Add-Member -type NoteProperty -name last_season -Value 1  -Force
 
+                $show | Add-Member -type NoteProperty -name collected -Value $null  -Force
+
                 $show | Add-Member -type NoteProperty -name next_episode -Value 1  -Force
 
                 $show | Add-Member -type NoteProperty -name next_episode_id -Value $null  -Force
+
+                $show | Add-Member -type NoteProperty -name next -Value $null  -Force
 
                 $show | Add-Member -type NoteProperty -name next_season -Value 1  -Force
 
@@ -132,13 +140,35 @@ function main {
                 $show.last_episode = $entry.last_episode.number         
         
                 $show.last_season = $entry.last_episode.season
-        
+                
+                $nseason = "{0:d2}" -f $show.next_season
+                $nepisode = "{0:d2}" -f $show.next_episode
+                $cseason = "{0:d2}" -f $show.last_season
+                $cepisode = "{0:d2}" -f $show.last_episode
+                if($show.last_episode -ne $null){
+                    $collected= -join("S",$cseason," E",$cepisode)
+                }else{
+                    $collected = $null
+                }
+                if($show.next_episode -ne $null -and $show.last_episode -ne $null){
+                    $next= -join("S",$nseason," E",$nepisode)                
+                }else{
+                    $next = $null
+                }
+
+                $show.collected = $collected
+
+                $show.next = $next
 
                 #check airing
 
-                $now = Get-Date -UFormat "%Y-%m-%d"
+                $now = Get-Date -Format "o"
+
+                #2014-09-01T09:10:11.000Z
     
                 $show | Add-Member -type NoteProperty -name download_type -Value $null -Force
+
+                $show | Add-Member -type NoteProperty -name release_wait -Value $null -Force
 
                 $show_next_season = $show.next_season
 
@@ -170,11 +200,19 @@ function main {
                 
                         $first_aired_long = $entry.first_aired
 
-                        $first_aired = $first_aired_long.subString(0, [System.Math]::Min(10, $first_aired_long.Length))
+                        $delay = New-TimeSpan -Hours 1
 
-                        if((get-date $now) -lt (get-date $first_aired)) {
+                        #$first_aired = $first_aired_long.subString(0, [System.Math]::Min(10, $first_aired_long.Length))
+
+                        if((get-date $now) -lt (get-date $first_aired_long)+$delay) {
                     
                             $show.download_type = $null
+
+                            $start = (get-date $first_aired_long)+$delay
+
+                            $till_release = New-TimeSpan -Start (get-date $now) -End $start
+
+                            $show.release_wait = "{0:dd}d:{0:hh}h:{0:mm}m" -f $till_release                                
                 
                         } else {
                     
@@ -182,7 +220,7 @@ function main {
 
                             $episode = "{0:d2}" -f $show_next_episode
 
-                            $title = $show.title -replace('\s','.') ` -replace(':','')
+                            $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
 
                             $show.download_type = "episode"
                     
@@ -194,7 +232,7 @@ function main {
                 
                         $season = "{0:d2}" -f $show_next_season
 
-                        $title = $show.title-replace('\s','.') ` -replace(':','')
+                        $title = $show.title-replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
 
                         $show.download_type = "season"
                 
@@ -202,8 +240,18 @@ function main {
                 
                     } else {
                         
-                        $show.download_type = $null
+                        #$show.download_type = $null
+                        
+                        $season = "{0:d2}" -f $show_next_season
+
+                        $episode = "{0:d2}" -f $show_next_episode
+
+                        $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+
+                        $show.download_type = "episode"
                     
+                        $show.query = -join($title,".S",$season,"E",$episode)
+                                              
                     }
 
                 }
@@ -231,7 +279,7 @@ function main {
                
                 if(-Not $trakt.title.Contains($entry.movie.title)) {
 
-                    $title = $entry.movie.title -replace('\s','.') ` -replace(':','')
+                    $title = $entry.movie.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
 
                     $query = -join($title,".",$entry.movie.year) 
 
@@ -259,11 +307,15 @@ function main {
 
             }
 
-            clear
+            #clear
 
-            Get-Date
+            $Date = Get-Date
 
-            Write-Output $trakt | Format-Table -Property @{ e='title'; width = 30 },@{ e='last_season'; width = 15 },@{ e='last_episode'; width = 15 },@{ e='next_season'; width = 15 },@{ e='next_episode'; width = 15 },@{ e='download_type'; width = 15 }
+            #Write-Host "$Date | Downloads added: RD $countRD - PM $countPM | Currently Monitored Items:"
+                       
+            #tohtml $trakt            
+
+            Write-Output $trakt  | Where-Object {$_.next_season -ne $null -or $_.download_type -ne $null} | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
 
         #api safety call
 
@@ -274,8 +326,6 @@ function main {
                 $seconds =  [math]::Round($timer.Elapsed.TotalSeconds,0)
 
                 $time = Get-Date
-
-                $counters += "$time | in the last ~5 Minutes: $count calls to trakt.tv, Downloads added: RD $countRD - PM $countPM "
     
                 $timer =  [system.diagnostics.stopwatch]::StartNew()
 
@@ -288,12 +338,8 @@ function main {
 
                 $count = 0
 
-                $countdRD = 0
-
-                $countPM = 0
             }
 
-            Write-Output $counters
 
             if(-not $trakt.download_type.Contains("episode") -or -not $trakt.download_type.Contains("season")){
 
@@ -400,13 +446,15 @@ function main {
 
                         $check_cache_RD = Invoke-WebRequest @Post_Hash -WebSession $realdebridsession
                 
-                        $check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession
+                        #$check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession
+
+                        
 
                         if($check_cache_PM.response){
                     
                             $object.service = "PM"
 							
-							$uri_pm = -join("https://www.premiumize.me/api/transfer/directdl?apikey=",$premiumize_api_key)
+			    $uri_pm = -join("https://www.premiumize.me/api/transfer/directdl?apikey=",$premiumize_api_key)
 							
                             $get_link = Invoke-RestMethod -Uri $uri_pm -Method Post -Body @{src=$magnet} -H @{"Content-Type" = "application/x-www-form-urlencoded"}  -SessionVariable premiumizesession
 
@@ -736,294 +784,90 @@ function traktsync($reference) {
 
 }
 
-#fucking around:
-
-function missed {
-
-    $Header = @{
-        "Content-type" = "application/json"
-        "trakt-api-key" = "$trakt_client_id"
-        "trakt-api-version" = "2"
-        "Authorization" = "Bearer $trakt_access_token"
-    
-    }
-
-    $trakt_new = new-object system.collections.arraylist
-    
-    $trakt_xml_array = Import-Clixml -Path .\trakt.xml
-
-    $trakt_xml = [System.Collections.ArrayList]$trakt_xml_array
-
-    
-# get_collection_shows
-
-    $get_collection_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection/shows" -Method Get -Headers $Header -SessionVariable traktsession
-
-    #Write-Output $get_collection_response.seasons  | sort -Property number -Unique
-
-    Foreach ($entry in $get_collection_response) {
-        
-        Foreach($season in $entry.seasons){
-            
-            $season.episodes = $season.episodes | Select-Object -Property * -ExcludeProperty collected_at
-        }
-      
-        $seasons = $entry.seasons | Sort -Property number -Unique 
-
-        $entry.show | Add-Member -type NoteProperty -name collected -Value $seasons
-        
-        $trakt_new += $entry.show 
-
-    }
-
-    $trakt_new | Add-Member -type NoteProperty -name available -Value $null
-
-    $trakt_new | Add-Member -type NoteProperty -name missed -Value $null
-
-    Foreach($show in $trakt_new){
-        
-        $show_id = $show.ids.trakt
-
-        $seasons = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons?extended=episodes" -Method Get -Headers $Header -WebSession $traktsession
-
-        Foreach($entry in $seasons) {
-            $entry.episodes = $entry.episodes | Select -Property number
-        }
-
-        $seasons = $seasons  | Select-Object -Property * -ExcludeProperty ids | Where-Object {$_.number  -ne 0} 
-
-        $show.available = $seasons
-        
-        $missed = Compare-Object -ReferenceObject $show.available -DifferenceObject $show.collected -PassThru | Select-Object -Property * -ExcludeProperty SideIndicator
-                                    
-        $show.missed = @($missed)
-                 
-    }
-
-    #Write-Output $trakt_new.missed
-
-    $trakt_new.collected.episodes | Add-Member -type NoteProperty -name scraper -Value $null
-
-    $trakt_new.collected | Add-Member -type NoteProperty -name scraper -Value $null
-
-    Write-Output $trakt_new
+main
 
 }
 
-function keepscraped {
+$webui = {
+    $http = [System.Net.HttpListener]::new()
+    $http.Prefixes.Add("http://+:8008/")
 
-$Header = @{
-        "Content-type" = "application/json"
-        "trakt-api-key" = "$trakt_client_id"
-        "trakt-api-version" = "2"
-        "Authorization" = "Bearer $trakt_access_token"
-    
-    }
+    $http.Start()
 
-    $trakt_new = @() #new-object system.collections.arraylist
-    
-    $trakt_xml_array = Import-Clixml -Path .\trakt.xml
+    Add-Type -AssemblyName System.Web
 
-    $trakt_xml = [System.Collections.ArrayList]$trakt_xml_array
+    while ($http.IsListening) {
 
-    
-# get_collection_shows
-    
-    $get_collection_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection/shows" -Method Get -Headers $Header -SessionVariable traktsession
+        $context = $http.GetContext()
 
-    Foreach ($entry in $get_collection_response) {
-                      
-        $trakt_new += $entry.show
+        if ($context.Request.HttpMethod -eq 'GET') {
 
-    }
-    $count++
-# get_watchlist_shows
-  
-    $get_watchlist_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/watchlist/shows" -Method Get -Headers $Header -WebSession $traktsession
-      
-    Foreach ($entry in $get_watchlist_response) {
+            $URL = $context.Request.Url.LocalPath
                
-        if(-Not $trakt_new.title.Contains($entry.show.title)) {
-            
-            $trakt_new += $entry.show
+            if($URL -eq "/") {
+               
+                $URL = "/index.html"
 
-        }
-    }
-    $count++
-# add special show stuff
-
-   Foreach ($show in $trakt_new) {
-        
-        $show | Add-Member -type NoteProperty -name type -Value "tv"  -Force
-
-        $show | Add-Member -type NoteProperty -name query -Value $null  -Force
-
-        $show | Add-Member -type NoteProperty -name last_episode -Value 1   -Force
-
-        $show | Add-Member -type NoteProperty -name last_season -Value 1  -Force
-
-        $show | Add-Member -type NoteProperty -name next_episode -Value 1  -Force
-
-        $show | Add-Member -type NoteProperty -name next_episode_id -Value $null  -Force
-
-        $show | Add-Member -type NoteProperty -name next_season -Value 1  -Force
-
-        $show | Add-Member -type NoteProperty -name next_season_id -Value $null  -Force
-
-        $show_id = $show.ids.trakt
-
-        $entry = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/progress/collection?hidden=false&specials=false&count_specials=true" -Method Get -Headers $Header -WebSession $traktsession
-        $count++
-        $show.next_episode = $entry.next_episode.number            
-        
-        $show.next_episode_id = $entry.next_episode.ids
-
-        $show.next_season = $entry.next_episode.season
-        
-        $show.last_episode = $entry.last_episode.number         
-        
-        $show.last_season = $entry.last_episode.season
-        
-
-    #check airing
-
-        $now = Get-Date -UFormat "%Y-%m-%d"
-    
-        $show | Add-Member -type NoteProperty -name download_type -Value $null -Force
-
-        $show_next_season = $show.next_season
-
-        $show_next_episode = $show.next_episode
-
-        if ($show.next_episode -ne $null) {
-
-            $entry0 = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons?extended=full" -Method Get -Headers $Header -WebSession $traktsession
-            $count++
-            if(-Not $entry0.number.Contains(0)){
-                $entrynumber = $show_next_season-1
-            }else{
-                $entrynumber = $show_next_season
             }
 
-            $show.next_season_id = $entry0.ids[$entrynumber]
-
-            if($entry0.episode_count[$entrynumber] -ne $entry0.aired_episodes[$entrynumber]) {
-                
-                $entry = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons/$show_next_season/episodes/$show_next_episode ?extended=full" -Method Get -Headers $Header -WebSession $traktsession
-                $count++
-                $first_aired_long = $entry.first_aired
-
-                $first_aired = $first_aired_long.subString(0, [System.Math]::Min(10, $first_aired_long.Length))
-
-                if((get-date $now) -lt (get-date $first_aired)) {
-                    $show.download_type = $null
-                } else {
-                    
-                    $season = "{0:d2}" -f $show_next_season
-
-                    $episode = "{0:d2}" -f $show_next_episode
-
-                    $title = $show.title -replace('\s','.') ` -replace(':','')
-
-                    $show.download_type = "episode"
-                    
-                    $show.query = -join($title,".S",$season,"E",$episode)
-
-                    
-                    
-                }
-            } else {
-                
-                $season = "{0:d2}" -f $show_next_season
-
-                $title = $show.title-replace('\s','.') ` -replace(':','')
-
-                $show.download_type = "season"
-                
-                $show.query = -join($title,".S",$season)
-                
-            }
-
-        }
-    }    
-
-# get_collection_movies
-
-    $get_collection_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection/movies" -Method Get -Headers $Header -WebSession $traktsession
-    $count++
-    Foreach ($entry in $get_collection_response) {
-        
-        $trakt_new += $entry.movie
-
-    }
-
-#get_watchlist_movies
-
-    $get_watchlist_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/watchlist/movies" -Method Get -Headers $Header -WebSession $traktsession
-    $count++
-    Foreach ($entry in $get_watchlist_response) {
-               
-        if(-Not $trakt_new.title.Contains($entry.movie.title)) {
-
-            $title = $entry.movie.title -replace('\s','.') ` -replace(':','')
-
-            $query = -join($title,".",$entry.movie.year) 
-
-            $entry.movie | Add-Member -type NoteProperty -name download_type -Value "movie" -Force
-
-            $entry.movie | Add-Member -type NoteProperty -name type -Value "movie"  -Force
-
-            $entry.movie | Add-Member -type NoteProperty -name query -Value $query  -Force
-            
-            $trakt_new += $entry.movie
-
+            $ContentStream = [System.IO.File]::OpenRead( "web/$URL" );
+            $Context.Response.ContentType = [System.Web.MimeMapping]::GetMimeMapping("web/$URL")
+            $ContentStream.CopyTo( $Context.Response.OutputStream );
+            $Context.Response.Close()
         }
     }
-
-    #$trakt_new | Add-Member -type NoteProperty -name scraper -Value $null -Force
-
-    Foreach ($new in $trakt_new){
-        
-        $xml = $trakt_xml | Where title -CContains $new.title
-
-        $new | Add-Member -type NoteProperty -name scraper -Value $xml.scraper 
-
-        $new | Add-Member -type NoteProperty -name cached -Value $xml.cached 
-
-        $new | Add-Member -type NoteProperty -name hashed -Value $xml.hashed 
-
-        $new | Add-Member -type NoteProperty -name status -Value $xml.status 
-        
-    }
-
-#create $trakt for ongoing script -- Problem?
-
-    #$trakt_xml = $trakt_xml |Where-Object {$trakt_new.title -contains $_.title -and $_.status -ge 2} #keep old, delte not wanted
-
-    #$trakt_new = $trakt_new |Where-Object {$trakt_xml.title -notcontains $_.title } #add new
-
-    #$trakt = $trakt_xml + $trakt_new
-
-#trakt created.
-
-
-
-#Compare-Object -ReferenceObject $trakt_new.scraper -DifferenceObject $trakt_xml.scraper -PassThru 
-
-#Write-Output $missed
-
-#clear
-
-#Get-Date
-
-Write-Output $trakt_new
-
-#pass queries to rarbg
-    
 }
 
 #start script:
 
-    #get token -- run this first
+    #Start-Job  -Name WebUi -ScriptBlock $webui
+    
+    Start-Job -Name Aria2c -ScriptBlock {
+    
+        C:\Path\to\aria2c.exe --disable-ipv6=true --enable-rpc --rpc-allow-origin-all --rpc-listen-all --rpc-listen-port=6800 --rpc-secret=premiumizer --max-connection-per-server=16 --file-allocation=none --disk-cache=0 --max-concurrent-downloads=1
+    
+    }
 
-    main
+    Start-Job -Name TraktScraper -ScriptBlock $traktscraper
+
+    [int[]]$datapoints =@(100)*60
+
+    Sleep 10
+
+    while(1) {
+             
+        Clear-Host
+
+        Write-Host "Trakt: "
+
+        $new = Receive-Job TraktScraper
+
+        if($new -ne $null) {
+            
+            $TraktScraperOutput = $new
+
+        }
+
+        $TraktScraperOutput
+
+        $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.getGlobalStat`",`"params`":[`"token:premiumizer`"]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
+
+        $PeakValue = [int]$shit.result.downloadSpeed / 1000000
+        $datapoints += [int]$PeakValue
+        $datapoints += [int]$PeakValue
+        $datapoints += [int]$PeakValue
+        $datapoints += [int]$PeakValue
+        $datapoints += [int]$PeakValue
+        $datapoints = $datapoints | Select-Object -last 60
+
+        Write-Host "Aria2c: "
+
+        $aria=@{active = $shit.result.numActive; waiting = $shit.result.numWaiting; finished = $shit.result.numStoppedTotal}
+
+        [pscustomobject]$aria | Format-Table -Property @{ e='active'; width = 10 },@{ e='waiting'; width = 10 },@{ e='finished'; width = 10 }
+
+        Show-Graph -datapoints $datapoints -GraphTitle Download-Speed -XAxisTitle Last-60-Seconds
+        
+        Sleep 5  
+
+    }
