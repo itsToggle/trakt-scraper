@@ -48,8 +48,6 @@ $trakt_access_token = "***"
 $real_debrid_token ='***'
 $premiumize_api_key = "***"
 
-#. .\html_creator.ps1
-
 function main {
 
     $timer =  [system.diagnostics.stopwatch]::StartNew()
@@ -450,11 +448,11 @@ function main {
 
                         
 
-                        if($check_cache_PM.response){
+                        if(1 -eq 0){#$check_cache_PM.response){
                     
                             $object.service = "PM"
 							
-			    $uri_pm = -join("https://www.premiumize.me/api/transfer/directdl?apikey=",$premiumize_api_key)
+							$uri_pm = -join("https://www.premiumize.me/api/transfer/directdl?apikey=",$premiumize_api_key)
 							
                             $get_link = Invoke-RestMethod -Uri $uri_pm -Method Post -Body @{src=$magnet} -H @{"Content-Type" = "application/x-www-form-urlencoded"}  -SessionVariable premiumizesession
 
@@ -786,42 +784,173 @@ function traktsync($reference) {
 
 main
 
+} 
+
+function tohtml {
+
+#------------------------------------------------------------------------------
+# Copyright 2006-2007 Adrian Milliner (ps1 at soapyfrog dot com)
+# http://ps1.soapyfrog.com
+#------------------------------------------------------------------------------
+
+# This script grabs text from the console buffer and outputs to the pipeline
+# lines of HTML that represent it.
+#
+# Usage: get-bufferhtml [args]
+#
+# Where args are:
+#
+# -last n       - how many lines back from current line to grab
+#                 default is (effectively) everything
+# -all          - grab all lines in console, overrides -last
+# -trim         - trims blank space from the right of each line
+#                 this is ok unless you have lots of text with
+#                 varying background colours
+# -font s       - optional css font name. default is nothing which
+#                 means the browser will use whatever is default for a
+#                 <pre> tag. "Courier New" is quite a good alternative
+# -fontsize s   - optional css font size, eg "9pt" or "80%"
+# -style s      - optional addition css, eg "overflow:hidden"
+# -palette p    - choose a colour palette, one of:
+#                 "powershell" normal for a PowerShell window (ie with
+#                              strange colours for darkmagenta and darkyellow
+#                 "standard"   normal ansi colours as used by a standard
+#                              cmd.exe session
+#                 "print"      like powershell, but with colours handy
+#                              for printing where you want to save ink.
+#
+# The output is one large wrapped <pre> tag to keep whitespace intact.
+#
+
+param(
+  [int]$last = 50000,             
+  [switch]$all,                   
+  [switch]$trim,                  
+  [string]$font=$null,            
+  [string]$fontsize=$null,        
+  [string]$style="",              
+  [string]$palette="powershell"   
+  )
+$ui = $host.UI.RawUI
+[int]$start = 0
+if ($all) { 
+  [int]$end = $ui.BufferSize.Height  
+  [int]$start = 0
+}
+else { 
+  [int]$end = ($ui.CursorPosition.Y - 1)
+  [int]$start = $end - $last
+  if ($start -le 0) { $start = 0 }
+}
+$height = $end - $start
+if ($height -le 0) {
+  write-warning "There must be one or more lines to get"
+  return
+}
+$width = $ui.BufferSize.Width
+$dims = 0,$start,($width-1),($end-1)
+$rect = new-object Management.Automation.Host.Rectangle -argumentList $dims
+$cells = $ui.GetBufferContents($rect)
+
+# set default colours
+$fg = $ui.ForegroundColor; $bg = $ui.BackgroundColor
+$defaultfg = $fg; $defaultbg = $bg
+
+# character translations
+# wordpress weirdness means I do special stuff for < and \
+$cmap = @{
+    [char]"<" = "&lt;"# "<span>&lt;</span>"
+    [char]"\" = "&#x5c;"
+    [char]">" = "&gt;"
+    [char]"'" = "&#39;"
+    [char]"`"" = "&#34;"
+    [char]"&" = "&amp;"
 }
 
-$webui = {
-    $http = [System.Net.HttpListener]::new()
-    $http.Prefixes.Add("http://+:8008/")
+# console colour mapping
+# the powershell console has some odd colour choices, 
+# marked with a 6-char hex codes below
+$palettes = @{}
+$palettes.powershell = @{
+    "Black"       ="#000"
+    "DarkBlue"    ="#008"
+    "DarkGreen"   ="#080"
+    "DarkCyan"    ="#088"
+    "DarkRed"     ="#800"
+    "DarkMagenta" ="#012456"
+    "DarkYellow"  ="#eeedf0"
+    "Gray"        ="#ccc"
+    "DarkGray"    ="#888"
+    "Blue"        ="#00f"
+    "Green"       ="#0f0"
+    "Cyan"        ="#0ff"
+    "Red"         ="#f00"
+    "Magenta"     ="#f0f"
+    "Yellow"      ="#ff0"
+    "White"       ="#fff"
+  }
+# now a variation for the standard console (used by cmd.exe) based
+# on ansi colours
+$palettes.standard = ($palettes.powershell).Clone()
+$palettes.standard.DarkMagenta = "#808"
+$palettes.standard.DarkYellow = "#880"
 
-    $http.Start()
+# this is a weird one... takes the normal powershell one and
+# inverts a few colours so normal ps1 output would save ink when
+# printed (eg from a web page).
+$palettes.print = ($palettes.powershell).Clone()
+$palettes.print.DarkMagenta = "#eee"
+$palettes.print.DarkYellow = "#000"
+$palettes.print.Yellow = "#440"
+$palettes.print.Black = "#fff"
+$palettes.print.White = "#000"
 
-    Add-Type -AssemblyName System.Web
+$comap = $palettes[$palette]
 
-    while ($http.IsListening) {
-
-        $context = $http.GetContext()
-
-        if ($context.Request.HttpMethod -eq 'GET') {
-
-            $URL = $context.Request.Url.LocalPath
-               
-            if($URL -eq "/") {
-               
-                $URL = "/index.html"
-
-            }
-
-            $ContentStream = [System.IO.File]::OpenRead( "web/$URL" );
-            $Context.Response.ContentType = [System.Web.MimeMapping]::GetMimeMapping("web/$URL")
-            $ContentStream.CopyTo( $Context.Response.OutputStream );
-            $Context.Response.Close()
-        }
+# inner function to translate a console colour to an html/css one
+function c2h{return $comap[[string]$args[0]]}
+$f=""
+if ($font) { $f += " font-family: `"$font`";" }
+if ($fontsize) { $f += " font-size: $fontsize;" }
+$line  = "<!DOCTYPE html><html lang=`"en`"><head><meta charset=`"utf-16`"><meta http-equiv=`"refresh`" content=`"5`"></head><body style=`"background-color: $(c2h $bg);`"><pre style='color: $(c2h $fg); background-color: $(c2h $bg);$f $style'>" 
+for ([int]$row=0; $row -lt $height; $row++ ) {
+  for ([int]$col=0; $col -lt $width; $col++ ) {
+    $cell = $cells[$row,$col]
+    # do we need to change colours?
+    $cfg = [string]$cell.ForegroundColor
+    $cbg = [string]$cell.BackgroundColor
+    if ($fg -ne $cfg -or $bg -ne $cbg) {
+      if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { 
+        $line += "</span>" # remove any specialisation
+        $fg = $defaultfg; $bg = $defaultbg;
+      }
+      if ($cfg -ne $defaultfg -or $cbg -ne $defaultbg) { 
+        # start a new colour span
+        $line += "<span style='color: $(c2h $cfg); background-color: $(c2h $cbg)'>" 
+      }
+      $fg = $cfg
+      $bg = $cbg
     }
+    $ch = $cell.Character
+    $ch2 = $cmap[$ch]; if ($ch2) { $ch = $ch2 }
+    $line += $ch
+    #$line += "<br>"
+  }
+  if ($trim) { $line = $Line.TrimEnd() }
+  $line += "<br>"
+  $line
+  $line=""
 }
+if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { "</span>" } # close off any specialisation of colour
+"</pre></body></html>"
+
+
+}
+
+
 
 #start script:
 
-    #Start-Job  -Name WebUi -ScriptBlock $webui
-    
     Start-Job -Name Aria2c -ScriptBlock {
     
         C:\Path\to\aria2c.exe --disable-ipv6=true --enable-rpc --rpc-allow-origin-all --rpc-listen-all --rpc-listen-port=6800 --rpc-secret=premiumizer --max-connection-per-server=16 --file-allocation=none --disk-cache=0 --max-concurrent-downloads=1
@@ -832,42 +961,71 @@ $webui = {
 
     [int[]]$datapoints =@(100)*60
 
-    Sleep 10
+    $http = [System.Net.HttpListener]::new()
 
-    while(1) {
-             
-        Clear-Host
+    $http.Prefixes.Add("http://+:8008/")
 
-        Write-Host "Trakt: "
+    $http.Start()
 
-        $new = Receive-Job TraktScraper
+    $twice = $false
 
-        if($new -ne $null) {
+    while ($http.IsListening) {
+        
+        $context = $http.GetContext()
+
+       # $context
+
+        if ($context.Request.HttpMethod -eq 'GET') {
             
-            $TraktScraperOutput = $new
+            if (-not $twice) {
+            Clear-Host
+
+            Write-Host "Trakt: "
+
+            $new = Receive-Job TraktScraper
+
+            if($new -ne $null) {
+            
+                $TraktScraperOutput = $new
+
+            }
+
+            $TraktScraperOutput
+
+            $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.getGlobalStat`",`"params`":[`"token:premiumizer`"]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
+
+            $PeakValue = [int]$shit.result.downloadSpeed / 1000000
+            $datapoints += [int]$PeakValue
+            $datapoints += [int]$PeakValue
+            $datapoints += [int]$PeakValue
+            $datapoints += [int]$PeakValue
+            $datapoints += [int]$PeakValue
+            $datapoints = $datapoints | Select-Object -last 60
+
+            Write-Host "Aria2c: "
+
+            $aria=@{active = $shit.result.numActive; waiting = $shit.result.numWaiting; finished = $shit.result.numStoppedTotal}
+
+            [pscustomobject]$aria | Format-Table -Property @{ e='active'; width = 10 },@{ e='waiting'; width = 10 },@{ e='finished'; width = 10 }
+
+            Show-Graph -datapoints $datapoints -GraphTitle Download-Speed -XAxisTitle Last-60-Seconds
+
+            Write-Host
+
+            [string]$html = tohtml -Raw -Encoding utf8                           
+
+            $buffer = [System.Text.Encoding]::utf8.GetBytes("$html") # convert htmtl to bytes
+            $context.Response.ContentLength64 = $buffer.Length
+            $context.Response.OutputStream.Write($buffer, 0, $buffer.Length) #stream to broswer
+            $context.Response.OutputStream.Close() # close the response
+
+            $twice = $true
+
+            }else{
+                $twice = $false
+            }
 
         }
-
-        $TraktScraperOutput
-
-        $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.getGlobalStat`",`"params`":[`"token:premiumizer`"]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
-
-        $PeakValue = [int]$shit.result.downloadSpeed / 1000000
-        $datapoints += [int]$PeakValue
-        $datapoints += [int]$PeakValue
-        $datapoints += [int]$PeakValue
-        $datapoints += [int]$PeakValue
-        $datapoints += [int]$PeakValue
-        $datapoints = $datapoints | Select-Object -last 60
-
-        Write-Host "Aria2c: "
-
-        $aria=@{active = $shit.result.numActive; waiting = $shit.result.numWaiting; finished = $shit.result.numStoppedTotal}
-
-        [pscustomobject]$aria | Format-Table -Property @{ e='active'; width = 10 },@{ e='waiting'; width = 10 },@{ e='finished'; width = 10 }
-
-        Show-Graph -datapoints $datapoints -GraphTitle Download-Speed -XAxisTitle Last-60-Seconds
-        
-        Sleep 5  
-
     }
+    
+    
