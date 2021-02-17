@@ -4,13 +4,11 @@ A Powershell script to manage your media collection through trakt, with torrent 
 
 This script is not going to be maintained. Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
 
-Powershell UI:
+WebUi:
 
-![alt text](https://i.ibb.co/bm3f4Lk/image-2.png)
+![alt text](https://i.ibb.co/9wVss8n/Screenshot-20210217-105536-Chrome.jpg)
 
-WebUI:
-
-![alt text](https://i.ibb.co/ysdxCXV/image-1.png)
+![alt text](https://i.ibb.co/kS3Q7Yt/Screenshot-20210217-112410-Chrome.jpg)
 
 What it does:
     
@@ -27,6 +25,7 @@ What it does:
                - If a cached version is found, the direct download link gets send to Aria2c, a download manager
                - If no cached torrents are available, the best seeded torrent is added to a debrid service's download queue
                - The download is monitored in the background. Once its available for direct download, it gets send to Aria2c
+               - Once added to Aria2c the torrent is deleted from the Debrid Service.
                
     4. trakt:
                - Downloaded content is added to the trakt collection
