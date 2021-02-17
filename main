@@ -1,5 +1,3 @@
-Import-Module Graphical
-
 function get_token {
 
 $Header = @{
@@ -11,7 +9,7 @@ $Header = @{
 }
 
 $get_token = ConvertTo-Json -InputObject @{
-   code = "C1670BE1"
+   code = ""
    client_id = $trakt_client_id
    client_secret = $trakt_client_secret
    grant_type = 'authorization_code'
@@ -177,8 +175,14 @@ function main {
                     $entry0 = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons?extended=full" -Method Get -Headers $Header -WebSession $traktsession
             
                     $count++
-            
-                    if(-Not $entry0.number.Contains(0)){
+                    
+                    $seasonnumbers = $entry0.number
+
+                    if($seasonnumbers.GetType().Name -eq "Int32"){
+
+                        $entrynumber = $show_next_season-1
+
+                    }elseif(-Not $entry0.number.Contains(0)){
                 
                         $entrynumber = $show_next_season-1
             
@@ -305,15 +309,15 @@ function main {
 
             }
 
-            #clear
+            Clear-Host     
+            
+            $delimiter = ";"
 
-            $Date = Get-Date
+            Write-Output $delimiter
 
-            #Write-Host "$Date | Downloads added: RD $countRD - PM $countPM | Currently Monitored Items:"
-                       
-            #tohtml $trakt            
+            Write-Output $trakt  | Where-Object {$_.next_season -ne $null -or $_.download_type -ne $null} |  Sort-Object -Property release_wait | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
 
-            Write-Output $trakt  | Where-Object {$_.next_season -ne $null -or $_.download_type -ne $null} | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
+            
 
         #api safety call
 
@@ -786,13 +790,33 @@ main
 
 } 
 
-function tohtml {
+#start script:
+
+    Start-Job -Name Aria2c -ScriptBlock {
+    
+        C:\Path\to\aria2c.exe --disable-ipv6=true --enable-rpc --rpc-allow-origin-all --rpc-listen-all --rpc-listen-port=6800 --rpc-secret=premiumizer --max-connection-per-server=16 --file-allocation=none --disk-cache=0 --max-concurrent-downloads=1 --continue=true
+    
+    }
+
+    Start-Job -Name TraktScraper -ScriptBlock $traktscraper
+    
+    function tohtml {
 
 #------------------------------------------------------------------------------
 # Copyright 2006-2007 Adrian Milliner (ps1 at soapyfrog dot com)
 # http://ps1.soapyfrog.com
+#
+# This work is licenced under the Creative Commons 
+# Attribution-NonCommercial-ShareAlike 2.5 License. 
+# To view a copy of this licence, visit 
+# http://creativecommons.org/licenses/by-nc-sa/2.5/ 
+# or send a letter to 
+# Creative Commons, 559 Nathan Abbott Way, Stanford, California 94305, USA.
 #------------------------------------------------------------------------------
 
+# $Id: get-bufferhtml.ps1 162 2007-01-26 16:30:12Z adrian $
+
+#------------------------------------------------------------------------------
 # This script grabs text from the console buffer and outputs to the pipeline
 # lines of HTML that represent it.
 #
@@ -947,20 +971,6 @@ if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { "</span>" } # close off any spe
 
 }
 
-
-
-#start script:
-
-    Start-Job -Name Aria2c -ScriptBlock {
-    
-        C:\Path\to\aria2c.exe --disable-ipv6=true --enable-rpc --rpc-allow-origin-all --rpc-listen-all --rpc-listen-port=6800 --rpc-secret=premiumizer --max-connection-per-server=16 --file-allocation=none --disk-cache=0 --max-concurrent-downloads=1
-    
-    }
-
-    Start-Job -Name TraktScraper -ScriptBlock $traktscraper
-
-    [int[]]$datapoints =@(100)*60
-
     $http = [System.Net.HttpListener]::new()
 
     $http.Prefixes.Add("http://+:8008/")
@@ -969,63 +979,234 @@ if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { "</span>" } # close off any spe
 
     $twice = $false
 
+    $box1 = [string][char]9608
+
+    $box2 = [string][char]9617
+
+    $barLength = 30
+
     while ($http.IsListening) {
         
         $context = $http.GetContext()
-
-       # $context
-
+        
         if ($context.Request.HttpMethod -eq 'GET') {
             
-            if (-not $twice) {
             Clear-Host
 
-            Write-Host "Trakt: "
+            Write-Host " Trakt: "
 
-            $new = Receive-Job TraktScraper
+            $Job = Get-Job -Name TraktScraper
 
-            if($new -ne $null) {
             
-                $TraktScraperOutput = $new
 
+            $new = $Job.ChildJobs.Output | Out-String
+
+            $TraktScraperOutput = $new.Split(";")
+
+            $TraktScraperOutput[-1]
+
+            
+
+            $real_debrid_token ='***'
+
+            $Header = @{
+                "authorization" = "Bearer $real_debrid_token"
             }
 
-            $TraktScraperOutput
+            $Get_Torrents = @{
+                Method = "GET"
+                Uri = "https://api.real-debrid.com/rest/1.0/torrents"
+                Headers = $Header
+            }
+            
+            $debridresponse = Invoke-RestMethod @Get_Torrents -WebSession $realdebridsession
 
-            $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.getGlobalStat`",`"params`":[`"token:premiumizer`"]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
+            if($debridresponse -ne $null){
 
-            $PeakValue = [int]$shit.result.downloadSpeed / 1000000
-            $datapoints += [int]$PeakValue
-            $datapoints += [int]$PeakValue
-            $datapoints += [int]$PeakValue
-            $datapoints += [int]$PeakValue
-            $datapoints += [int]$PeakValue
-            $datapoints = $datapoints | Select-Object -last 60
+                Write-Host "Debrid:"
 
-            Write-Host "Aria2c: "
+                foreach($download in $debridresponse) {
 
-            $aria=@{active = $shit.result.numActive; waiting = $shit.result.numWaiting; finished = $shit.result.numStoppedTotal}
+                    if($download.status -eq "queued") {
+                        $completedSize = 0
+                        $remainingSize = 1
+                        $percentdownload = "0 %"
+                        $name = $download.filename
+                        $speed = 0
+                        $gb = [math]::Round($download.bytes / 1000000000,2)
+                        $download | Add-Member -type NoteProperty -name completedSize -Value $completedSize  -Force
+                        $download | Add-Member -type NoteProperty -name remainingSize -Value $remainingSize  -Force
+                        $download | Add-Member -type NoteProperty -name percentdownload -Value $percentdownload  -Force
+                        $download | Add-Member -type NoteProperty -name name -Value $name  -Force
+                        $download | Add-Member -type NoteProperty -name speed -Value $speed  -Force
+                        $download | Add-Member -type NoteProperty -name gb -Value $gb  -Force
+        
+                        
+                    }else{ 
+                        $completedSize = [math]::Round($download.bytes / 1000000000 * $download.progress / 100,2)
+                        $remainingSize = [math]::Round($download.bytes / 1000000000,2) - $completedSize
+                        $percentdownload = "{0:P2}" -f ($download.progress/100)
+                        $name = $download.filename
+                        $speed = [math]::Round($download.speed / 1000000,1)
+                        $gb = [math]::Round($download.bytes / 1000000000,2)
+                        $download | Add-Member -type NoteProperty -name completedSize -Value $completedSize  -Force
+                        $download | Add-Member -type NoteProperty -name remainingSize -Value $remainingSize  -Force
+                        $download | Add-Member -type NoteProperty -name percentdownload -Value $percentdownload  -Force
+                        $download | Add-Member -type NoteProperty -name name -Value $name  -Force
+                        $download | Add-Member -type NoteProperty -name speed -Value $speed  -Force
+                        $download | Add-Member -type NoteProperty -name gb -Value $gb  -Force
+                    }
+                }
 
-            [pscustomobject]$aria | Format-Table -Property @{ e='active'; width = 10 },@{ e='waiting'; width = 10 },@{ e='finished'; width = 10 }
+                $debridresponse | Format-Table  @{
+                    Label = "torrent"
+                    Expression = {-join($_.name.Substring(0,27), "...")}
+                    Width = 30
+                }, @{
+                    Label = "size"
+                    Expression = {-join($_.gb, " GB")}
+                    Width = 10
+                }, @{
+                    Label = "seeders"
+                    Expression = {$_.seeders}
+                    Width = 10
+                }, @{
+                    Label = "speed"
+                    Expression = {-join($_.speed, " MB/s")}
+                    Width = 10
+                }, @{
+                    Label = "percent"
+                    Expression = {$_.percentdownload}
+                    Width = 10
+                }, @{
+                    Label = "progress"
+                    Expression = {$e = [char]27;"$e[92m$("$box1"*(($_.progress/100) * $barLength))$e[97m$("$box2"*((1-$_.progress/100) * $barLength))${e}[0m"}
+                    Width = 45
+                }
+            }
+                        
 
-            Show-Graph -datapoints $datapoints -GraphTitle Download-Speed -XAxisTitle Last-60-Seconds
+            $downloads = @()
+
+            $active = Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.tellActive`",`"params`":[`"token:premiumizer`"]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
+
+            $waiting = Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.tellWaiting`",`"params`":[`"token:premiumizer`",-1,50]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
+
+            $stopped = Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.tellStopped`",`"params`":[`"token:premiumizer`",-1,50]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
+
+            $downloads += $waiting.result
+
+            $downloads += $active.result
+
+            $downloads += $stopped.result
+            
+            if($downloads -ne $null){
+
+                Write-Host
+
+                Write-Host "Aria2c: "
+
+                foreach($download in $downloads) {
+
+                    if($download.totalLength -eq 0) {
+                        $completedSize = 0
+                        $remainingSize = 1
+                        $percentdownload = "{0:P2}" -f $CompletedSize
+                        $name = $download.dir.Split("\")[-1]
+                        $speed = 0
+                        $gb = "?"
+                        $download | Add-Member -type NoteProperty -name completedSize -Value $completedSize  -Force
+                        $download | Add-Member -type NoteProperty -name remainingSize -Value $remainingSize  -Force
+                        $download | Add-Member -type NoteProperty -name percentdownload -Value $percentdownload  -Force
+                        $download | Add-Member -type NoteProperty -name name -Value $name  -Force
+                        $download | Add-Member -type NoteProperty -name speed -Value $speed  -Force
+                        $download | Add-Member -type NoteProperty -name gb -Value $gb  -Force
+        
+                        
+                    }else{ 
+                        $completedSize = $download.completedLength / $download.totalLength
+                        $remainingSize = ($download.totalLength -$download.completedLength)/$download.totalLength 
+                        $percentdownload = "{0:P2}" -f $CompletedSize
+                        $name = $download.files.path.Split("/")[-1]
+                        $speed = [math]::Round($download.downloadSpeed / 1000000,1)
+                        $gb = [math]::Round($download.totalLength / 1000000000,2)
+                        $download | Add-Member -type NoteProperty -name completedSize -Value $completedSize  -Force
+                        $download | Add-Member -type NoteProperty -name remainingSize -Value $remainingSize  -Force
+                        $download | Add-Member -type NoteProperty -name percentdownload -Value $percentdownload  -Force
+                        $download | Add-Member -type NoteProperty -name name -Value $name  -Force
+                        $download | Add-Member -type NoteProperty -name speed -Value $speed  -Force
+                        $download | Add-Member -type NoteProperty -name gb -Value $gb  -Force
+                    }
+                }
+            
+                $downloads | Format-Table  @{
+                    Label = "file"
+                    Expression = {-join($_.name.Substring(0,27), "...")}
+                    Width = 30
+                }, @{
+                    Label = "size"
+                    Expression = {-join($_.gb, " GB")}
+                    Width = 10
+                }, @{
+                    Label = "speed"
+                    Expression = {-join($_.speed, " MB/s")}
+                    Width = 10
+                }, @{
+                    Label = "percent"
+                    Expression = {$_.percentdownload}
+                    Width = 10
+                }, @{
+                    Label = "progress"
+                    Expression = {$e = [char]27;"$e[92m$("$box1"*($_.completedSize * $barLength))$e[97m$("$box2"*($_.remainingSize * $barLength))${e}[0m"}
+                    Width = 45
+                }
+            
+            }
 
             Write-Host
 
-            [string]$html = tohtml -Raw -Encoding utf8                           
+            Write-Host "Disks: "
+
+            $diskData = gwmi win32_logicaldisk -ComputerName $env:COMPUTERNAME -Filter "DriveType = 3"
+            $charCount = "="*75 
+            $usedSpace = " "*20 
+            $freeSpace = " "*10 
+  
+            foreach($disk in $diskData) { 
+                
+                $usedSpaceSize = ($disk.size -$disk.FreeSpace)/$disk.Size 
+                $freeSpaceDisk =  $disk.FreeSpace/$disk.Size 
+                $percentDisk = "{0:P2}" -f $freeSpaceDisk
+                $gb = [math]::Round($disk.FreeSpace / 1000000000)
+                $id = $disk.DeviceID
+
+                $disk | Add-Member -type NoteProperty -name usedSpaceSize -Value $usedSpaceSize  -Force
+                $disk | Add-Member -type NoteProperty -name freeSpaceDisk -Value $freeSpaceDisk  -Force
+                $disk | Add-Member -type NoteProperty -name percentDisk -Value $percentDisk  -Force
+                $disk | Add-Member -type NoteProperty -name gb -Value $gb  -Force
+                $disk | Add-Member -type NoteProperty -name id -Value $id  -Force
+            } 
+            
+            $diskData | Format-Table  @{
+                    Label = "drive"
+                    Expression = {$_.id}
+                }, @{
+                    Label = "free"
+                    Expression = {-join($_.percentDisk, "  ", $_.gb, " GB")}
+                }, @{
+                    Label = "size"
+                    Expression = {$e = [char]27;"$e[92m$("$box1"*($_.usedSpaceSize * $barLength))$e[97m$("$box2"*($_.freeSpaceDisk * $barLength))${e}[0m"}
+                }
+
+            Write-Host
+
+            [string]$html = tohtml -Raw -Encoding utf8 #Get-Content -Path .\out.html                              
 
             $buffer = [System.Text.Encoding]::utf8.GetBytes("$html") # convert htmtl to bytes
             $context.Response.ContentLength64 = $buffer.Length
             $context.Response.OutputStream.Write($buffer, 0, $buffer.Length) #stream to broswer
             $context.Response.OutputStream.Close() # close the response
 
-            $twice = $true
-
-            }else{
-                $twice = $false
-            }
-
         }
+        
     }
-    
-    
