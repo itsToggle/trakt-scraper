@@ -452,7 +452,7 @@ function main {
 
                         
 
-                        if(1 -eq 0){#$check_cache_PM.response){
+                        if($check_cache_PM.response){
                     
                             $object.service = "PM"
 							
