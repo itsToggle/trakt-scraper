@@ -86,3 +86,4 @@ Future To-Do's
         - Season Packs that are formatted "Walking.Dead.S01.Part1" are ignored.
         - Only Rarbg is currently scraped
         - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
+        - rabg results are formatted as json. I didn't realize this and used regex on the raw text to turn it into an object. it works, it's just ugly af
