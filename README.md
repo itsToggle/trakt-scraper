@@ -85,3 +85,4 @@ Future To-Do's
         - I cant get the Console to update indepently from the WebUI.
         - Season Packs that are formatted "Walking.Dead.S01.Part1" are ignored.
         - Only Rarbg is currently scraped
+        - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
