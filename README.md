@@ -43,24 +43,44 @@ WebUi:
 
 ![alt text](https://i.ibb.co/kS3Q7Yt/Screenshot-20210217-112410-Chrome.jpg)
 
-    Programming Stuff:
-        The Script first checks if the params.xml file is present in the current dir.
-            If not, the first launch setup is started. The user inputs are saved in the params.xml file.
-        The params.xml is imported.
-        Aria2c is launched as a Background Job.
-        The Trakt Scraper is started as a Background Job.
-            New content is determined with an API call to trakt.tv
-                The trakt "collection" is searched for upcoming or newly released episodes. These are processed further.
-                The trakt "watchlist" is compared to the collection. Everything that isnt collected is processed further.
-            The as "new" determined content is written out as a search query
-            An API call to rarbg.to's API is made with the query
-            The response is sorted by video quality and seeders
-            An API call to the debrid services is made for each torrent (or magnet link to be more precise)
-            If one of the torrents is cached, the direct links are send to Aria2c via an API call
-                The trakt collection is updated with the newly downloaded content.
-            If none are chached, the best quality torrent is added to the debrid services for cloud download
-                The trakt collection is updated with the new content.
-            The debrid services are periodically checked for finished torrents via an API call
-            If a torrent is finished, the direct links are sent to Aria2c via an API call.
-            Finished torrents are removed from the debrid service
-            
+Programming Stuff:
+
+        -The Script first checks if the params.xml file is present in the current dir.
+            -If not, the first launch setup is started. The user inputs are saved in the params.xml file.
+        -The params.xml is imported.
+        -Aria2c is launched as a Background Job.
+        -The Trakt Scraper is started as a Background Job.
+            -New content is determined with an API call to trakt.tv
+                -The trakt "collection" is searched for upcoming or newly released episodes. These are processed further.
+                -The trakt "watchlist" is compared to the collection. Everything that isnt collected is processed further.
+            -The as "new" determined content is written out as a search query
+            -An API call to rarbg.to's API is made with the query
+            -The response is sorted by video quality and seeders
+            -An API call to the debrid services is made for each torrent (or magnet link to be more precise)
+            -If one of the torrents is cached, the direct links are send to Aria2c via an API call
+                -The trakt collection is updated with the newly downloaded content.
+            -If none are chached, the best quality torrent is added to the debrid services for cloud download
+                -The trakt collection is updated with the new content.
+            -The debrid services are periodically checked for finished torrents via an API call
+            -If a torrent is finished, the direct links are sent to Aria2c via an API call.
+            -Finished torrents are removed from the debrid services
+        -The HTML Server is started
+            -A "GET" request is recieved
+                - The Output from the Trakt Scraper Background Job is displayed as a Table
+                - An API call to Aria2c is made to get information on waiting/running/finished downloads
+                - The Output is displayed as a Table
+                - An API call to RealDebrid is made to get information on waiting/running/finished torrents
+                - The Output is displayed as a Table
+                - The Function "tohtml" is called
+                    - This turns everything currently displayed on the console window into an html format
+                - The html formatted string is sent to the recipient.
+
+
+Future To-Do's
+
+        - Search Queries are currently only one string per item. 
+            - Walking Dead Season 1 Episode 5 is turned into: Walking.Dead.S01.E05
+            - This creates an issue with releases that are formatted with the shows year (Walking.Dead.2007.S01.E05)
+        - I cant get the Console to update indepently from the WebUI.
+        - Season Packs that are formatted "Walking.Dead.S01.Part1" are ignored.
+        - Only Rarbg is currently scraped
