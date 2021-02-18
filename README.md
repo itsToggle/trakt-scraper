@@ -4,11 +4,7 @@ A Powershell script to manage your media collection through trakt, with torrent 
 
 This script is not going to be maintained. Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
 
-WebUi:
 
-![alt text](https://i.ibb.co/9wVss8n/Screenshot-20210217-105536-Chrome.jpg)
-
-![alt text](https://i.ibb.co/kS3Q7Yt/Screenshot-20210217-112410-Chrome.jpg)
 
 What it does:
     
@@ -30,3 +26,17 @@ What it does:
     4. trakt:
                - Downloaded content is added to the trakt collection
                - The watchlist is cleared.
+
+(Update 18.02.21): 
+    - Ive added a bit of UI to the setup so its easier to understand.
+    - The Script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services and Aria2c.
+    - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
+    - https://stackoverflow.com/questions/4019466/httplistener-access-denied/4115328.
+    - The command in this case is: netsh http add urlacl url=http://+:8008/ user=YOUR-USERNAME-HERE
+    - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
+    
+WebUi:
+
+![alt text](https://i.ibb.co/9wVss8n/Screenshot-20210217-105536-Chrome.jpg)
+
+![alt text](https://i.ibb.co/kS3Q7Yt/Screenshot-20210217-112410-Chrome.jpg)
