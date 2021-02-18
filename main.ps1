@@ -769,9 +769,9 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
     
     }
 
-    $trakt_client_id = "25dbf1b838ee726cedcd17e1488a7da2efdaf03c8db67123cc0cf35d4f4ce954"
+    $trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
     
-    $trakt_client_secret = "d7d51db7140249d85d60ab3dde2d32d39617546528b843e7f463c01bba354e43"
+    $trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
 
     $get_token = ConvertTo-Json -InputObject @{
         client_id = $trakt_client_id
@@ -867,8 +867,8 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
     Write-Host "Success! Your parameters will now be saved as params.ini. You can edit this file any time."
 
     $paramsini = @{
-        trakt_client_id = "25dbf1b838ee726cedcd17e1488a7da2efdaf03c8db67123cc0cf35d4f4ce954"
-        trakt_client_secret = "d7d51db7140249d85d60ab3dde2d32d39617546528b843e7f463c01bba354e43"
+        trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
+        trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
         trakt_access_token = $trakt_access_token
         real_debrid_token = $real_debrid_token
         premiumize_api_key = $premiumize_api_key 
