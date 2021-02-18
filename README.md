@@ -42,3 +42,25 @@ WebUi:
 ![alt text](https://i.ibb.co/9wVss8n/Screenshot-20210217-105536-Chrome.jpg)
 
 ![alt text](https://i.ibb.co/kS3Q7Yt/Screenshot-20210217-112410-Chrome.jpg)
+
+    Programming Stuff:
+        The Script first checks if the params.xml file is present in the current dir.
+            If not, the first launch setup is started. The user inputs are saved in the params.xml file.
+        The params.xml is imported.
+        Aria2c is launched as a Background Job.
+        The Trakt Scraper is started as a Background Job.
+            New content is determined with an API call to trakt.tv
+                The trakt "collection" is searched for upcoming or newly released episodes. These are processed further.
+                The trakt "watchlist" is compared to the collection. Everything that isnt collected is processed further.
+            The as "new" determined content is written out as a search query
+            An API call to rarbg.to's API is made with the query
+            The response is sorted by video quality and seeders
+            An API call to the debrid services is made for each torrent (or magnet link to be more precise)
+            If one of the torrents is cached, the direct links are send to Aria2c via an API call
+                The trakt collection is updated with the newly downloaded content.
+            If none are chached, the best quality torrent is added to the debrid services for cloud download
+                The trakt collection is updated with the new content.
+            The debrid services are periodically checked for finished torrents via an API call
+            If a torrent is finished, the direct links are sent to Aria2c via an API call.
+            Finished torrents are removed from the debrid service
+            
