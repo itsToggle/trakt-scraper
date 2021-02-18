@@ -1,53 +1,16 @@
-function get_token {
-
-$Header = @{
-    "Content-type" = "application/json"
-    "trakt-api-key" = "$trakt_client_id"
-    "trakt-api-version" = "2"
-    "Authorization" = "Bearer $trakt_access_token"
-    
-}
-
-$get_token = ConvertTo-Json -InputObject @{
-   code = ""
-   client_id = $trakt_client_id
-   client_secret = $trakt_client_secret
-   grant_type = 'authorization_code'
-   redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
-}
-
-$get_token_response = Invoke-RestMethod -Uri "https://api.trakt.tv/oauth/device/code" -Method Post -Body $get_token -Headers $Header
-
-Write-Output $get_token_response
-
-#Write-Host "code is " $get_token_response.user_code "go to trakt.tv/activate"
-
-$device_code = $get_token_response.device_code
-
-$poll_token = ConvertTo-Json -InputObject @{
-   code = $device_code
-   client_id = $trakt_client_id
-   client_secret = $trakt_client_secret
-}
-
-sleep 60
-
-$poll_token_response = Invoke-RestMethod -Uri "https://api.trakt.tv/oauth/device/token" -Method Post -Body $poll_token -Headers $Header
-
-Write-Output $poll_token_response
-
-}
-
 $traktscraper = {
 
-$trakt_client_id = "***"
-$trakt_client_secret = "***"
-$trakt_access_token = "***"
-$real_debrid_token ='***'
-$premiumize_api_key = "***"
+sleep 1
+
+$trakt_client_id = $args[0].trakt_client_id
+$trakt_client_secret = $args[0].trakt_client_secret
+$trakt_access_token = $args[0].trakt_access_token
+$real_debrid_token = $args[0].real_debrid_token
+$premiumize_api_key = $args[0].premiumize_api_key
+$path_to_downloads = $args[0].path_to_downloads
 
 function main {
-
+    
     $timer =  [system.diagnostics.stopwatch]::StartNew()
 
     $count = 0
@@ -309,7 +272,13 @@ function main {
 
             }
 
-            Clear-Host     
+            Clear-Host
+
+            $Date = Get-Date
+
+            #Write-Host "$Date | Downloads added: RD $countRD - PM $countPM | Currently Monitored Items:"
+                       
+            #tohtml $trakt            
             
             $delimiter = ";"
 
@@ -448,7 +417,7 @@ function main {
 
                         $check_cache_RD = Invoke-WebRequest @Post_Hash -WebSession $realdebridsession
                 
-                        #$check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession
+                        $check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession
 
                         
 
@@ -466,7 +435,7 @@ function main {
 
                             Foreach ($download in $get_link.content.link){
                         
-                                $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.addUri`",`"params`":[`"token:premiumizer`",[`"$download`"], {`"dir`": `"D:\\$type\\$torrent_name`"}]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession
+                                $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.addUri`",`"params`":[`"token:premiumizer`",[`"$download`"], {`"dir`": `"$path_to_downloads\$type\\$torrent_name`"}]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession
 
                                 Sleep 2
 
@@ -631,7 +600,7 @@ function main {
    
                         $download = $response.download
 
-                        $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.addUri`",`"params`":[`"token:premiumizer`",[`"$download`"], {`"dir`": `"D:\\$type\\$torrent_name`"}]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession
+                        $shit=Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.addUri`",`"params`":[`"token:premiumizer`",[`"$download`"], {`"dir`": `"$path_to_downloads\$type\\$torrent_name`"}]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession
 
                     }
                     
@@ -790,15 +759,148 @@ main
 
 } 
 
-#start script:
+if(-Not (Test-Path .\params.xml -PathType Leaf)) {
 
-    Start-Job -Name Aria2c -ScriptBlock {
-    
-        C:\Path\to\aria2c.exe --disable-ipv6=true --enable-rpc --rpc-allow-origin-all --rpc-listen-all --rpc-listen-port=6800 --rpc-secret=premiumizer --max-connection-per-server=16 --file-allocation=none --disk-cache=0 --max-concurrent-downloads=1 --continue=true
+    $Header = @{
+        "Content-type" = "application/json"
+        "trakt-api-key" = "$trakt_client_id"
+        "trakt-api-version" = "2"
+        "Authorization" = "Bearer $trakt_access_token"
     
     }
 
-    Start-Job -Name TraktScraper -ScriptBlock $traktscraper
+    $trakt_client_id = "25dbf1b838ee726cedcd17e1488a7da2efdaf03c8db67123cc0cf35d4f4ce954"
+    
+    $trakt_client_secret = "d7d51db7140249d85d60ab3dde2d32d39617546528b843e7f463c01bba354e43"
+
+    $get_token = ConvertTo-Json -InputObject @{
+        client_id = $trakt_client_id
+    }
+   
+    $get_token_response = Invoke-RestMethod -Uri "https://api.trakt.tv/oauth/device/code" -Method Post -Body $get_token -Headers $Header
+
+    clear
+
+    Read-Host -Prompt 'To use the script, you need to connect it to Trakt.tv and specify a few parameters. Press Enter to continue'
+
+    Write-Host "Connect the Script to Trakt. Go to  trakt.tv/activate  and within 60 seconds enter the code:" $get_token_response.user_code 
+
+    $device_code = $get_token_response.device_code
+
+    $poll_token = ConvertTo-Json -InputObject @{
+        code = $device_code
+        client_id = $trakt_client_id
+        client_secret = $trakt_client_secret
+    }
+
+    $http_valid_response = $false
+
+    while(-Not $http_valid_response) {
+        
+        $http_valid_response = $true
+
+        sleep $get_token_response.interval
+
+        try { 
+    
+            $poll_token_response = Invoke-RestMethod -Uri "https://api.trakt.tv/oauth/device/token" -Method Post -Body $poll_token -Headers $Header
+    
+        } catch {
+        
+        $http_valid_response = $false
+
+        }   
+    }
+
+    clear
+
+    Write-Host "Successfully connected to Trakt!" 
+    
+    $trakt_access_token = $poll_token_response.access_token
+
+    Write-Host
+
+    Write-Host "Connect the Script to Debrid Services. If promted for a Service you do not intent to use, just press Enter."
+
+    Write-Host
+
+    $real_debrid_token = Read-Host -Prompt 'Real Debrid - enter your API token'
+
+    Write-Host
+
+    $premiumize_api_key = Read-Host -Prompt 'Premiumize - enter your API key'
+
+    clear
+
+    Write-Host "Successfully connected to Debrid Services!"
+
+    Write-Host
+    
+    Write-Host "The Script starts an instance of the download manager Aria2c in the background. To function properly, please provide the path to your Aria2c.exe"
+    
+    $path_to_aria2c = "C:\"
+
+    Write-Host
+
+    while(-Not(Test-Path (-join($path_to_aria2c,"aria2c.exe")) -PathType Leaf)){
+
+        $path_to_aria2c = Read-Host -Prompt 'Please enter the path in the format C:\path\to\'
+
+        if((Test-Path (-join($path_to_aria2c,"aria2c.exe")) -PathType Leaf)){
+            clear
+            Write-Host "Successfully connected to Aria2c!"
+        }else{
+            Write-Host "Path seems to be wrong."
+        }
+    }
+
+    clear
+
+    Write-Host "The Script creates the following folders for your downloads: tv,movie,default."
+
+    Write-Host
+
+    $path_to_downloads = Read-Host -Prompt "Please enter the path in the format: D:\path\to\downloads\" 
+
+    clear
+
+    Write-Host "Success! Your parameters will now be saved as params.ini. You can edit this file any time."
+
+    $paramsini = @{
+        trakt_client_id = "25dbf1b838ee726cedcd17e1488a7da2efdaf03c8db67123cc0cf35d4f4ce954"
+        trakt_client_secret = "d7d51db7140249d85d60ab3dde2d32d39617546528b843e7f463c01bba354e43"
+        trakt_access_token = $trakt_access_token
+        real_debrid_token = $real_debrid_token
+        premiumize_api_key = $premiumize_api_key 
+        path_to_aria2c = $path_to_aria2c
+        path_to_downloads = $path_to_downloads
+    }
+
+    $paramsini
+
+    $paramsini | Export-Clixml -Path .\params.xml
+
+    Write-Host
+
+    Write-Host "Please ensure all paramters are correct. If youve made any mistakes, delete the params.ini file before restarting."
+
+    Write-Host 
+
+    Read-Host -Prompt 'Please restart the Script. Press Enter to exit'
+
+}else {
+
+    $settings = Import-Clixml -Path .\params.xml
+
+    $env:Path += $settings.path_to_aria2c
+
+    Start-Job -Name Aria2c -ScriptBlock {
+    
+        aria2c --disable-ipv6=true --enable-rpc --rpc-allow-origin-all --rpc-listen-all --rpc-listen-port=6800 --rpc-secret=premiumizer --max-connection-per-server=16 --file-allocation=none --disk-cache=0 --max-concurrent-downloads=1 --continue=true
+    
+    }
+
+    Start-Job -Name TraktScraper -ScriptBlock $traktscraper -ArgumentList $settings
     
     function tohtml {
 
@@ -997,17 +1099,13 @@ if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { "</span>" } # close off any spe
 
             $Job = Get-Job -Name TraktScraper
 
-            
-
             $new = $Job.ChildJobs.Output | Out-String
 
             $TraktScraperOutput = $new.Split(";")
 
-            $TraktScraperOutput[-1]
+            $TraktScraperOutput[-1]            
 
-            
-
-            $real_debrid_token ='***'
+            $real_debrid_token = $settings.real_debrid_token
 
             $Header = @{
                 "authorization" = "Bearer $real_debrid_token"
@@ -1210,3 +1308,5 @@ if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { "</span>" } # close off any spe
         }
         
     }
+
+}
