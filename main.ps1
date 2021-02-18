@@ -338,38 +338,38 @@ function main {
 
                         $rarbg = new-object system.collections.arraylist 
 
-                        $uri = -join ('https://torrentapi.org/pubapi_v2.php?mode=search&search_string=', $query, '&token=lnjzy73ucv&format=json_extended&app_id=lol')
+                        $uri = -join ('https://torrentapi.org/pubapi_v2.php?mode=search&search_string=', $query, '&category=52;51;50;49;48;45;44;41;17;14&token=lnjzy73ucv&format=json_extended&app_id=lol')
 
-                        $response = Invoke-WebRequest $uri -SessionVariable rarbgsession
+                        $response = Invoke-WebRequest $uri -SessionVariable rarbgsession | ConvertFrom-Json
 
-                        $content = $response.Content
-
-                        $items = [regex]::matches($content, "(?<={).*?(`"})").value
+                        $items = $response.torrent_results
 
                         Foreach ($item in $items) {
-    
-                            $title = [regex]::matches($item, "(?<=title`":`").*?(?=`",)").value
+                            
+                            $title = $item.title
                             
                             $quality = [regex]::matches($title, "(1080)|(720)|(2160)").value 
                             
-                            $category = [regex]::matches($item, "(?<=category`":`").*?(?=`",)").value
+                            $category = $item.category
                             
-                            $download = [regex]::matches($item, "(?<=download`":`").*?(?=`",)").value
+                            $download = $item.download
                             
-                            $seeders = [regex]::matches($item, "(?<=seeders`":).*?(?=,)").value
+                            $seeders = $item.seeders
                             
-                            $imdb = [regex]::matches($item, "(?<=imdb`":`").*?(?=`",)").value
+                            $imdb = $item.episode_info.imdb
                             
                             $hash = [regex]::matches($download, "(?<=btih:).*?(?=&)").value
                             
-                            if ([regex]::matches($title, "($query\.)").value  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)").value -and $category -ne "Movies\/Full BD") {
+                            if ([regex]::matches($title, "($query\.)", "IgnoreCase").value  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)", "IgnoreCase").value) {
                                 
                                 $rarbg += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash}
                             
                             }
+
+                            
                         }
 
-                        $object.scraper += @($rarbg | Sort-Object -Property @{ Expression = 'quality'; Descending = $true }, @{ Expression = 'seeders'; Descending = $true })
+                        $object.scraper += @( $rarbg | Sort-Object -Property quality,seeders -Descending )
 
                         $object.status = 2
 
@@ -770,7 +770,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
     }
 
     $trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
-    
+
     $trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
 
     $get_token = ConvertTo-Json -InputObject @{
@@ -838,7 +838,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
     
     Write-Host "The Script starts an instance of the download manager Aria2c in the background. To function properly, please provide the path to your Aria2c.exe"
     
-    $path_to_aria2c = "C:\"
+    $path_to_aria2c = "C:\aria2c.exe"
 
     Write-Host
 
@@ -846,7 +846,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
 
         $path_to_aria2c = Read-Host -Prompt 'Please enter the path in the format C:\path\to\'
 
-        if((Test-Path (-join($path_to_aria2c,"aria2c.exe")) -PathType Leaf)){
+        if((Test-Path $path_to_aria2c -PathType Leaf)){
             clear
             Write-Host "Successfully connected to Aria2c!"
         }else{
@@ -868,7 +868,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
 
     $paramsini = @{
         trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
-        trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
+    	trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
         trakt_access_token = $trakt_access_token
         real_debrid_token = $real_debrid_token
         premiumize_api_key = $premiumize_api_key 
@@ -885,12 +885,12 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
     Write-Host "Please ensure all paramters are correct. If youve made any mistakes, delete the params.ini file before restarting."
 
     Write-Host
-    
+
     Write-Host "The Script uses a WebUI to function. To allow the local webserver to be run, you need to run the following command with admin rights:"
 
     Write-Host "netsh http add urlacl url=http://+:8008/ user=YOUR-USERNAME-HERE"
-    
-    Write-Host 
+
+    Write-Host
 
     Read-Host -Prompt 'Please restart the Script. Press Enter to exit'
 
@@ -910,174 +910,174 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
     
     function tohtml {
 
-#------------------------------------------------------------------------------
-# Copyright 2006-2007 Adrian Milliner (ps1 at soapyfrog dot com)
-# http://ps1.soapyfrog.com
-#
-# This work is licenced under the Creative Commons 
-# Attribution-NonCommercial-ShareAlike 2.5 License. 
-# To view a copy of this licence, visit 
-# http://creativecommons.org/licenses/by-nc-sa/2.5/ 
-# or send a letter to 
-# Creative Commons, 559 Nathan Abbott Way, Stanford, California 94305, USA.
-#------------------------------------------------------------------------------
+		#------------------------------------------------------------------------------
+		# Copyright 2006-2007 Adrian Milliner (ps1 at soapyfrog dot com)
+		# http://ps1.soapyfrog.com
+		#
+		# This work is licenced under the Creative Commons 
+		# Attribution-NonCommercial-ShareAlike 2.5 License. 
+		# To view a copy of this licence, visit 
+		# http://creativecommons.org/licenses/by-nc-sa/2.5/ 
+		# or send a letter to 
+		# Creative Commons, 559 Nathan Abbott Way, Stanford, California 94305, USA.
+		#------------------------------------------------------------------------------
 
-# $Id: get-bufferhtml.ps1 162 2007-01-26 16:30:12Z adrian $
+		# $Id: get-bufferhtml.ps1 162 2007-01-26 16:30:12Z adrian $
 
-#------------------------------------------------------------------------------
-# This script grabs text from the console buffer and outputs to the pipeline
-# lines of HTML that represent it.
-#
-# Usage: get-bufferhtml [args]
-#
-# Where args are:
-#
-# -last n       - how many lines back from current line to grab
-#                 default is (effectively) everything
-# -all          - grab all lines in console, overrides -last
-# -trim         - trims blank space from the right of each line
-#                 this is ok unless you have lots of text with
-#                 varying background colours
-# -font s       - optional css font name. default is nothing which
-#                 means the browser will use whatever is default for a
-#                 <pre> tag. "Courier New" is quite a good alternative
-# -fontsize s   - optional css font size, eg "9pt" or "80%"
-# -style s      - optional addition css, eg "overflow:hidden"
-# -palette p    - choose a colour palette, one of:
-#                 "powershell" normal for a PowerShell window (ie with
-#                              strange colours for darkmagenta and darkyellow
-#                 "standard"   normal ansi colours as used by a standard
-#                              cmd.exe session
-#                 "print"      like powershell, but with colours handy
-#                              for printing where you want to save ink.
-#
-# The output is one large wrapped <pre> tag to keep whitespace intact.
-#
+		#------------------------------------------------------------------------------
+		# This script grabs text from the console buffer and outputs to the pipeline
+		# lines of HTML that represent it.
+		#
+		# Usage: get-bufferhtml [args]
+		#
+		# Where args are:
+		#
+		# -last n       - how many lines back from current line to grab
+		#                 default is (effectively) everything
+		# -all          - grab all lines in console, overrides -last
+		# -trim         - trims blank space from the right of each line
+		#                 this is ok unless you have lots of text with
+		#                 varying background colours
+		# -font s       - optional css font name. default is nothing which
+		#                 means the browser will use whatever is default for a
+		#                 <pre> tag. "Courier New" is quite a good alternative
+		# -fontsize s   - optional css font size, eg "9pt" or "80%"
+		# -style s      - optional addition css, eg "overflow:hidden"
+		# -palette p    - choose a colour palette, one of:
+		#                 "powershell" normal for a PowerShell window (ie with
+		#                              strange colours for darkmagenta and darkyellow
+		#                 "standard"   normal ansi colours as used by a standard
+		#                              cmd.exe session
+		#                 "print"      like powershell, but with colours handy
+		#                              for printing where you want to save ink.
+		#
+		# The output is one large wrapped <pre> tag to keep whitespace intact.
+		#
 
-param(
-  [int]$last = 50000,             
-  [switch]$all,                   
-  [switch]$trim,                  
-  [string]$font=$null,            
-  [string]$fontsize=$null,        
-  [string]$style="",              
-  [string]$palette="powershell"   
-  )
-$ui = $host.UI.RawUI
-[int]$start = 0
-if ($all) { 
-  [int]$end = $ui.BufferSize.Height  
-  [int]$start = 0
-}
-else { 
-  [int]$end = ($ui.CursorPosition.Y - 1)
-  [int]$start = $end - $last
-  if ($start -le 0) { $start = 0 }
-}
-$height = $end - $start
-if ($height -le 0) {
-  write-warning "There must be one or more lines to get"
-  return
-}
-$width = $ui.BufferSize.Width
-$dims = 0,$start,($width-1),($end-1)
-$rect = new-object Management.Automation.Host.Rectangle -argumentList $dims
-$cells = $ui.GetBufferContents($rect)
+		param(
+		  [int]$last = 50000,             
+		  [switch]$all,                   
+		  [switch]$trim,                  
+		  [string]$font=$null,            
+		  [string]$fontsize=$null,        
+		  [string]$style="",              
+		  [string]$palette="powershell"   
+		  )
+		$ui = $host.UI.RawUI
+		[int]$start = 0
+		if ($all) { 
+		  [int]$end = $ui.BufferSize.Height  
+		  [int]$start = 0
+		}
+		else { 
+		  [int]$end = ($ui.CursorPosition.Y - 1)
+		  [int]$start = $end - $last
+		  if ($start -le 0) { $start = 0 }
+		}
+		$height = $end - $start
+		if ($height -le 0) {
+		  write-warning "There must be one or more lines to get"
+		  return
+		}
+		$width = $ui.BufferSize.Width
+		$dims = 0,$start,($width-1),($end-1)
+		$rect = new-object Management.Automation.Host.Rectangle -argumentList $dims
+		$cells = $ui.GetBufferContents($rect)
 
-# set default colours
-$fg = $ui.ForegroundColor; $bg = $ui.BackgroundColor
-$defaultfg = $fg; $defaultbg = $bg
+		# set default colours
+		$fg = $ui.ForegroundColor; $bg = $ui.BackgroundColor
+		$defaultfg = $fg; $defaultbg = $bg
 
-# character translations
-# wordpress weirdness means I do special stuff for < and \
-$cmap = @{
-    [char]"<" = "&lt;"# "<span>&lt;</span>"
-    [char]"\" = "&#x5c;"
-    [char]">" = "&gt;"
-    [char]"'" = "&#39;"
-    [char]"`"" = "&#34;"
-    [char]"&" = "&amp;"
-}
+		# character translations
+		# wordpress weirdness means I do special stuff for < and \
+		$cmap = @{
+			[char]"<" = "&lt;"# "<span>&lt;</span>"
+			[char]"\" = "&#x5c;"
+			[char]">" = "&gt;"
+			[char]"'" = "&#39;"
+			[char]"`"" = "&#34;"
+			[char]"&" = "&amp;"
+		}
 
-# console colour mapping
-# the powershell console has some odd colour choices, 
-# marked with a 6-char hex codes below
-$palettes = @{}
-$palettes.powershell = @{
-    "Black"       ="#000"
-    "DarkBlue"    ="#008"
-    "DarkGreen"   ="#080"
-    "DarkCyan"    ="#088"
-    "DarkRed"     ="#800"
-    "DarkMagenta" ="#012456"
-    "DarkYellow"  ="#eeedf0"
-    "Gray"        ="#ccc"
-    "DarkGray"    ="#888"
-    "Blue"        ="#00f"
-    "Green"       ="#0f0"
-    "Cyan"        ="#0ff"
-    "Red"         ="#f00"
-    "Magenta"     ="#f0f"
-    "Yellow"      ="#ff0"
-    "White"       ="#fff"
-  }
-# now a variation for the standard console (used by cmd.exe) based
-# on ansi colours
-$palettes.standard = ($palettes.powershell).Clone()
-$palettes.standard.DarkMagenta = "#808"
-$palettes.standard.DarkYellow = "#880"
+		# console colour mapping
+		# the powershell console has some odd colour choices, 
+		# marked with a 6-char hex codes below
+		$palettes = @{}
+		$palettes.powershell = @{
+			"Black"       ="#000"
+			"DarkBlue"    ="#008"
+			"DarkGreen"   ="#080"
+			"DarkCyan"    ="#088"
+			"DarkRed"     ="#800"
+			"DarkMagenta" ="#012456"
+			"DarkYellow"  ="#eeedf0"
+			"Gray"        ="#ccc"
+			"DarkGray"    ="#888"
+			"Blue"        ="#00f"
+			"Green"       ="#0f0"
+			"Cyan"        ="#0ff"
+			"Red"         ="#f00"
+			"Magenta"     ="#f0f"
+			"Yellow"      ="#ff0"
+			"White"       ="#fff"
+		  }
+		# now a variation for the standard console (used by cmd.exe) based
+		# on ansi colours
+		$palettes.standard = ($palettes.powershell).Clone()
+		$palettes.standard.DarkMagenta = "#808"
+		$palettes.standard.DarkYellow = "#880"
 
-# this is a weird one... takes the normal powershell one and
-# inverts a few colours so normal ps1 output would save ink when
-# printed (eg from a web page).
-$palettes.print = ($palettes.powershell).Clone()
-$palettes.print.DarkMagenta = "#eee"
-$palettes.print.DarkYellow = "#000"
-$palettes.print.Yellow = "#440"
-$palettes.print.Black = "#fff"
-$palettes.print.White = "#000"
+		# this is a weird one... takes the normal powershell one and
+		# inverts a few colours so normal ps1 output would save ink when
+		# printed (eg from a web page).
+		$palettes.print = ($palettes.powershell).Clone()
+		$palettes.print.DarkMagenta = "#eee"
+		$palettes.print.DarkYellow = "#000"
+		$palettes.print.Yellow = "#440"
+		$palettes.print.Black = "#fff"
+		$palettes.print.White = "#000"
 
-$comap = $palettes[$palette]
+		$comap = $palettes[$palette]
 
-# inner function to translate a console colour to an html/css one
-function c2h{return $comap[[string]$args[0]]}
-$f=""
-if ($font) { $f += " font-family: `"$font`";" }
-if ($fontsize) { $f += " font-size: $fontsize;" }
-$line  = "<!DOCTYPE html><html lang=`"en`"><head><meta charset=`"utf-16`"><meta http-equiv=`"refresh`" content=`"5`"></head><body style=`"background-color: $(c2h $bg);`"><pre style='color: $(c2h $fg); background-color: $(c2h $bg);$f $style'>" 
-for ([int]$row=0; $row -lt $height; $row++ ) {
-  for ([int]$col=0; $col -lt $width; $col++ ) {
-    $cell = $cells[$row,$col]
-    # do we need to change colours?
-    $cfg = [string]$cell.ForegroundColor
-    $cbg = [string]$cell.BackgroundColor
-    if ($fg -ne $cfg -or $bg -ne $cbg) {
-      if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { 
-        $line += "</span>" # remove any specialisation
-        $fg = $defaultfg; $bg = $defaultbg;
-      }
-      if ($cfg -ne $defaultfg -or $cbg -ne $defaultbg) { 
-        # start a new colour span
-        $line += "<span style='color: $(c2h $cfg); background-color: $(c2h $cbg)'>" 
-      }
-      $fg = $cfg
-      $bg = $cbg
-    }
-    $ch = $cell.Character
-    $ch2 = $cmap[$ch]; if ($ch2) { $ch = $ch2 }
-    $line += $ch
-    #$line += "<br>"
-  }
-  if ($trim) { $line = $Line.TrimEnd() }
-  $line += "<br>"
-  $line
-  $line=""
-}
-if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { "</span>" } # close off any specialisation of colour
-"</pre></body></html>"
+		# inner function to translate a console colour to an html/css one
+		function c2h{return $comap[[string]$args[0]]}
+		$f=""
+		if ($font) { $f += " font-family: `"$font`";" }
+		if ($fontsize) { $f += " font-size: $fontsize;" }
+		$line  = "<!DOCTYPE html><html lang=`"en`"><head><meta charset=`"utf-16`"><meta http-equiv=`"refresh`" content=`"5`"></head><body style=`"background-color: $(c2h $bg);`"><pre style='color: $(c2h $fg); background-color: $(c2h $bg);$f $style'>" 
+		for ([int]$row=0; $row -lt $height; $row++ ) {
+		  for ([int]$col=0; $col -lt $width; $col++ ) {
+			$cell = $cells[$row,$col]
+			# do we need to change colours?
+			$cfg = [string]$cell.ForegroundColor
+			$cbg = [string]$cell.BackgroundColor
+			if ($fg -ne $cfg -or $bg -ne $cbg) {
+			  if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { 
+				$line += "</span>" # remove any specialisation
+				$fg = $defaultfg; $bg = $defaultbg;
+			  }
+			  if ($cfg -ne $defaultfg -or $cbg -ne $defaultbg) { 
+				# start a new colour span
+				$line += "<span style='color: $(c2h $cfg); background-color: $(c2h $cbg)'>" 
+			  }
+			  $fg = $cfg
+			  $bg = $cbg
+			}
+			$ch = $cell.Character
+			$ch2 = $cmap[$ch]; if ($ch2) { $ch = $ch2 }
+			$line += $ch
+			#$line += "<br>"
+		  }
+		  if ($trim) { $line = $Line.TrimEnd() }
+		  $line += "<br>"
+		  $line
+		  $line=""
+		}
+		if ($fg -ne $defaultfg -or $bg -ne $defaultbg) { "</span>" } # close off any specialisation of colour
+		"</pre></body></html>"
 
 
-}
+	}
 
     $http = [System.Net.HttpListener]::new()
 
