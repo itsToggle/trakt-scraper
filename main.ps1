@@ -122,8 +122,6 @@ function main {
                 #check airing
 
                 $now = Get-Date -Format "o"
-
-                #2014-09-01T09:10:11.000Z
     
                 $show | Add-Member -type NoteProperty -name download_type -Value $null -Force
 
