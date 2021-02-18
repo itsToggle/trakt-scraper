@@ -73,6 +73,7 @@ Programming Stuff:
                 - The Output is displayed as a Table
                 - The Function "tohtml" is called
                     - This turns everything currently displayed on the console window into an html format
+                    - A Header is added that tells the website to refresh itself every 5 seconds. This means a new Get request is sent every 5s.
                 - The html formatted string is sent to the recipient.
 
 
