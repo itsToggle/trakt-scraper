@@ -884,6 +884,12 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
 
     Write-Host "Please ensure all paramters are correct. If youve made any mistakes, delete the params.ini file before restarting."
 
+    Write-Host
+    
+    Write-Host "The Script uses a WebUI to function. To allow the local webserver to be run, you need to run the following command with admin rights:"
+
+    Write-Host "netsh http add urlacl url=http://+:8008/ user=YOUR-USERNAME-HERE"
+    
     Write-Host 
 
     Read-Host -Prompt 'Please restart the Script. Press Enter to exit'
