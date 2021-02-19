@@ -272,8 +272,6 @@ function main {
             
             $delimiter = ";"
 
-            #Write-Output $trakt  | Where-Object {$_.next_season -eq $null -and $_.download_type -eq $null} | Sort-Object -Property title | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
-
             Write-Output $delimiter
 
             Write-Output $trakt  | Where-Object {$_.next_season -ne $null -or $_.download_type -ne $null} |  Sort-Object -Property release_wait | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
