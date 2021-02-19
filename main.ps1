@@ -945,7 +945,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
 
     Write-Host
 
-    Write-Host "Please ensure all paramters are correct. If youve made any mistakes, delete the params.ini file before restarting."
+    Write-Host "Please ensure all paramters are correct. If youve made any mistakes, delete the params.xml file before restarting."
 
     Write-Host
 
