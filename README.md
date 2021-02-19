@@ -41,7 +41,7 @@ Getting started:
             - Everything in your collection will be monitored for new episodes.
             - Everything in your watchlist (that isnt already in your collection) will be downloaded. 
     2. First Launch:
-            - The Script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services and Aria2c.
+            - The main script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services and Aria2c.
     3. WebUI Setup:
             - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
             - https://stackoverflow.com/questions/4019466/httplistener-access-denied/4115328.
