@@ -72,7 +72,7 @@ function torrent($trakt, $settings) {
 
                         $scraper = new-object system.collections.arraylist 
 
-                        $items = scrape_torrents($query)
+                        $items = scrape_torrents $object
 
                         Foreach ($item in $items) {
                             

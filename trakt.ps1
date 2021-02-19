@@ -36,7 +36,7 @@ function trakt($settings) {
 
             }
 
-            $count++
+            
 
     # get_watchlist_shows
   
@@ -51,7 +51,7 @@ function trakt($settings) {
                 }
             }
 
-            $count++
+            
 
     # add special show stuff
 
@@ -81,7 +81,7 @@ function trakt($settings) {
 
                 $entry = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/progress/collection?hidden=false&specials=false&count_specials=true" -Method Get -Headers $Header -WebSession $traktsession
         
-                $count++
+                
         
                 $show.next_episode = $entry.next_episode.number            
         
@@ -128,7 +128,7 @@ function trakt($settings) {
 
                     $entry0 = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons?extended=full" -Method Get -Headers $Header -WebSession $traktsession
             
-                    $count++
+                    
                     
                     $seasonnumbers = $entry0.number
 
@@ -152,7 +152,7 @@ function trakt($settings) {
                 
                         $entry = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons/$show_next_season/episodes/$show_next_episode ?extended=full" -Method Get -Headers $Header -WebSession $traktsession
                
-                        $count++
+                        
                 
                         $first_aired_long = $entry.first_aired
 
@@ -213,7 +213,7 @@ function trakt($settings) {
 
             $get_collection_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection/movies" -Method Get -Headers $Header -WebSession $traktsession
     
-            $count++
+            
    
             Foreach ($entry in $get_collection_response) {
         
@@ -225,7 +225,7 @@ function trakt($settings) {
 
             $get_watchlist_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/watchlist/movies" -Method Get -Headers $Header -WebSession $traktsession
    
-            $count++
+            
    
             Foreach ($entry in $get_watchlist_response) {
                
