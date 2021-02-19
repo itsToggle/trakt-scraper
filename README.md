@@ -30,12 +30,18 @@ What it does:
 
     
 Getting started:
-            - Ive added a bit of UI to the setup so its easier to understand.
+    
+    1. First Launch:
             - The Script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services and Aria2c.
+    2. WebUI Setup:
             - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
             - https://stackoverflow.com/questions/4019466/httplistener-access-denied/4115328.
             - The command in this case is: netsh http add urlacl url=http://+:8008/ user=YOUR-USERNAME-HERE
             - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
+    3. Trakt Preperation:
+            - Clean Up a little :)
+            - Everything in your collection will be monitored for new episodes.
+            - Everything in your watchlist (that isnt already in your collection) will be downloaded.
     
 WebUi:
 
