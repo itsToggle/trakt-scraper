@@ -272,6 +272,8 @@ function main {
             
             $delimiter = ";"
 
+            #Write-Output $trakt  | Where-Object {$_.next_season -eq $null -and $_.download_type -eq $null} | Sort-Object -Property title | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
+
             Write-Output $delimiter
 
             Write-Output $trakt  | Where-Object {$_.next_season -ne $null -or $_.download_type -ne $null} |  Sort-Object -Property release_wait | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
@@ -401,9 +403,51 @@ function main {
                                 
                                 $files = @()
                                 
-                                $response = Invoke-WebRequest -Uri http://magnet2torrent.com/upload/ -Body @{magnet = "$download"} -Method Post
+                                $Header = @{
+                                    "authorization" = "Bearer $real_debrid_token"
+                                }
 
-                                $filestext = [regex]::matches($response.RawContent, "(S[0-9].E[0-9].)", "IgnoreCase").value
+                                $Post_Magnet = @{
+                                    Method = "POST"
+                                    Uri =  "https://api.real-debrid.com/rest/1.0/torrents/addMagnet"
+                                    Headers = $Header
+                                    Body = @{ magnet = $download }
+                                }
+
+                                $response = Invoke-RestMethod @Post_Magnet -WebSession $realdebridsession
+
+                                $torrent_id = $response.id
+
+                                $Get_Torrent_Info = @{
+                                    Method = "GET"
+                                    Uri = "https://api.real-debrid.com/rest/1.0/torrents/info/$torrent_id"
+                                    Headers = $Header
+                                }
+
+                                $response = Invoke-RestMethod @Get_Torrent_Info -WebSession $realdebridsession
+
+                                $torrent_status = $response.status
+
+                                $retries = 0
+
+                                sleep 1
+
+                                while( $torrent_status -eq "magnet_conversion" -and $retries -lt 1){
+                                    $retries++
+                                    Sleep 10
+                                    $response = Invoke-RestMethod @Get_Torrent_Info
+                                    $torrent_status = $response.status
+                                }
+
+                                $Delete_Torrent = @{
+                                    Method = "DELETE"
+                                    Uri =  "https://api.real-debrid.com/rest/1.0/torrents/delete/$torrent_id"
+                                    Headers = @{"authorization" = "Bearer $real_debrid_token"}
+                                }
+                    
+                                Invoke-RestMethod @Delete_Torrent -WebSession $realdebridsession
+
+                                $filestext = [regex]::matches($response.files.path, "(S[0-9].E[0-9].)", "IgnoreCase").value
 
                                 foreach($file in $filestext){
     
@@ -831,7 +875,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
         "Authorization" = "Bearer $trakt_access_token"
     
     }
-
+    
     $trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
     
     $trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
@@ -927,11 +971,11 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
 
     clear
 
-    Write-Host "Success! Your parameters will now be saved as params.ini. You can edit this file any time."
+    Write-Host "Success! Your parameters will now be saved as params.xml. You can edit this file any time."
 
     $paramsini = @{
-        trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
-        trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
+        trakt_client_id = "$trakt_client_id"
+        trakt_client_secret = "$trakt_client_secret"
         trakt_access_token = $trakt_access_token
         real_debrid_token = $real_debrid_token
         premiumize_api_key = $premiumize_api_key 
@@ -1164,7 +1208,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
             
             Clear-Host
 
-            Write-Host " Trakt: "
+            Write-Host " Trakt (Upcoming): "
 
             $Job = Get-Job -Name TraktScraper
 
@@ -1364,8 +1408,14 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
                     Label = "size"
                     Expression = {$e = [char]27;"$e[92m$("$box1"*($_.usedSpaceSize * $barLength))$e[97m$("$box2"*($_.freeSpaceDisk * $barLength))${e}[0m"}
                 }
-
+            
             Write-Host
+
+            #Write-Host "Trakt (Collection): "
+
+            #$TraktScraperOutput[-2] 
+
+            #Write-Host
 
             [string]$html = tohtml -Raw -Encoding utf8 #Get-Content -Path .\out.html                              
 
