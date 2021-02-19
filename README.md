@@ -31,6 +31,11 @@ What it does:
     
 Getting started:
 
+    0. What You need: 
+            - A Trakt.tv Account
+            - A Real Debrid Account is mandatory. Without it the script wont work.
+            - (Premiumize Account) This is optional. It will improve the chances of finding a chached torrent.
+            - Aria2c
     1. Trakt Preperation:
             - Clean Up a little :)
             - Everything in your collection will be monitored for new episodes.
