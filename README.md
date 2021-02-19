@@ -15,6 +15,7 @@ What it does:
     2. rarbg:
                - If new content is found, a scraper for rarbg.to searches for the best quality/best seeded torrent
                - If a season of a tv show is fully released, season packs are prefered.
+               - Releases that contain partial seasons (e.g. title.S01.Part1) are now fully supported
     
     3. debrid: 
                - Debrid Services (Real Debrid and Premiumize) are searched for a cached version of the scraped torrent
@@ -29,7 +30,7 @@ What it does:
 
     
     
-    (Update 18.02.21): 
+    Getting started:
         - Ive added a bit of UI to the setup so its easier to understand.
         - The Script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services and Aria2c.
         - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
@@ -53,14 +54,21 @@ Programming Stuff:
             -New content is determined with an API call to trakt.tv
                 -The trakt "collection" is searched for upcoming or newly released episodes. These are processed further.
                 -The trakt "watchlist" is compared to the collection. Everything that isnt collected is processed further.
-            -The as "new" determined content is written out as a search query
+            -If the as "new" determined content is released, it is written out as a search query
+                -If the content is a movie, the query is in format: Title.Year (Movie)
+                -If a season is fully released, the query is in format: Title.S01 / Title.Year.S01 (Season Pack)
+                -If a season isnt fully released, the query is in format: Title.S01E01 / Title.Year.S01E01 (Episode)
             -An API call to rarbg.to's API is made with the query
             -The response is sorted by video quality and seeders
+                -An API call to magnets2torrents.com is made to gather the torrents file lists.
+                -If an episode cant be found, a fallback to search for a season pack containing the episode is made.
             -An API call to the debrid services is made for each torrent (or magnet link to be more precise)
             -If one of the torrents is cached, the direct links are send to Aria2c via an API call
                 -The trakt collection is updated with the newly downloaded content.
+                -Seasons Packs are collected by the episodes found in the torrents file list
             -If none are chached, the best quality torrent is added to the debrid services for cloud download
                 -The trakt collection is updated with the new content.
+                -Seasons Packs are collected by the episodes found in the torrents file list
             -The debrid services are periodically checked for finished torrents via an API call
             -If a torrent is finished, the direct links are sent to Aria2c via an API call.
             -Finished torrents are removed from the debrid services
@@ -79,10 +87,6 @@ Programming Stuff:
 
 Future To-Do's
 
-        - Search Queries are currently only one string per item. 
-            - Walking Dead Season 1 Episode 5 is turned into: Walking.Dead.S01.E05
-            - This creates an issue with releases that are formatted with the shows year (Walking.Dead.2007.S01.E05)
         - I cant get the Console to update indepently from the WebUI.
-        - Season Packs that are formatted "Walking.Dead.S01.Part1" are ignored.
         - Only Rarbg is currently scraped
         - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
