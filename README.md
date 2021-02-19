@@ -30,6 +30,7 @@ What it does:
 
     
 Getting started:
+
     1. Trakt Preperation:
             - Clean Up a little :)
             - Everything in your collection will be monitored for new episodes.
