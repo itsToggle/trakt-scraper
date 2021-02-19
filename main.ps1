@@ -443,7 +443,7 @@ function main {
                                     Headers = @{"authorization" = "Bearer $real_debrid_token"}
                                 }
                     
-                                Invoke-RestMethod @Delete_Torrent -WebSession $realdebridsession
+                                $shit = Invoke-RestMethod @Delete_Torrent -WebSession $realdebridsession
 
                                 $filestext = [regex]::matches($response.files.path, "(S[0-9].E[0-9].)", "IgnoreCase").value
 
