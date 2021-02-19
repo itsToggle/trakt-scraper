@@ -66,7 +66,7 @@ Programming Stuff:
                 -If a season isnt fully released, the query is in format: Title.S01E01 / Title.Year.S01E01 (Episode)
             -An API call to rarbg.to's API is made with the query
             -The response is sorted by video quality and seeders
-                -An API call to magnets2torrents.com is made to gather the torrents file lists.
+                -An API call to RealDebrid is made to gather the torrents file lists.
                 -If an episode cant be found, a fallback to search for a season pack containing the episode is made.
             -An API call to the debrid services is made for each torrent (or magnet link to be more precise)
             -If one of the torrents is cached, the direct links are send to Aria2c via an API call
@@ -93,7 +93,6 @@ Programming Stuff:
 
 Future To-Do's
         
-        - With the support for partial season packs came a high dependency on the "magnets2torrents" website. I might change this to realdebrids' file list API call
         - I cant get the Console to update indepently from the WebUI.
         - Only Rarbg is currently scraped
         - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
