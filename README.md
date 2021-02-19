@@ -86,7 +86,8 @@ Programming Stuff:
 
 
 Future To-Do's
-
+        
+        - With the support for partial season packs came a high dependency on the "magnets2torrents" website. I might change this to realdebrids' file list API call
         - I cant get the Console to update indepently from the WebUI.
         - Only Rarbg is currently scraped
         - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
