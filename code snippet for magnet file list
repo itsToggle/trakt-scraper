@@ -1,0 +1,52 @@
+                        $query = "MeatEater.S09"
+
+                        $rarbg = new-object system.collections.arraylist 
+
+                        $uri = -join ('https://torrentapi.org/pubapi_v2.php?mode=search&search_string=', $query, '&category=52;51;50;49;48;45;44;41;17;14&token=lnjzy73ucv&format=json_extended&app_id=lol')
+
+                        $response = Invoke-WebRequest $uri -SessionVariable rarbgsession | ConvertFrom-Json
+
+                        $items = $response.torrent_results
+
+                        Foreach ($item in $items) {
+                            
+                            $title = $item.title
+                            
+                            $quality = [regex]::matches($title, "(1080)|(720)|(2160)").value 
+                            
+                            $category = $item.category
+                            
+                            $download = $item.download
+                            
+                            $seeders = $item.seeders
+                            
+                            $imdb = $item.episode_info.imdb
+                            
+                            $hash = [regex]::matches($download, "(?<=btih:).*?(?=&)").value
+                            
+                            
+
+                            if ([regex]::matches($title, "($query\.)", "IgnoreCase").value  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)", "IgnoreCase").value) {
+                                
+                                $files = @()
+                                
+                                $response = Invoke-WebRequest -Uri http://magnet2torrent.com/upload/ -Body @{magnet = "$download"} -Method Post
+
+                                $filestext = [regex]::matches($response.RawContent, "(S[0-9].E[0-9].)", "IgnoreCase").value
+
+                                foreach($file in $filestext){
+    
+                                    $season = [int][regex]::matches($file, "(?<=S)..?(?=E)", "IgnoreCase").value
+                                    $episode = [int][regex]::matches($file, "(?<=E)..?", "IgnoreCase").value
+                                    $files += new-object psobject -property @{season=$season;episode=$episode}
+                                }
+
+                                $rarbg += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
+                                
+                                Sleep 1
+
+                            }
+                        }
+
+                        $rarbg
+
