@@ -51,9 +51,7 @@ Getting started:
     
 WebUi:
 
-![alt text](https://i.ibb.co/9wVss8n/Screenshot-20210217-105536-Chrome.jpg)
-
-![alt text](https://i.ibb.co/kS3Q7Yt/Screenshot-20210217-112410-Chrome.jpg)
+![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
 
 Programming Stuff:
 
