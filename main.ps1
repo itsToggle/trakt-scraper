@@ -165,8 +165,6 @@ function main {
 
                         $delay = New-TimeSpan -Hours 1
 
-                        #$first_aired = $first_aired_long.subString(0, [System.Math]::Min(10, $first_aired_long.Length))
-
                         if((get-date $now) -lt (get-date $first_aired_long)+$delay) {
                     
                             $show.download_type = $null
@@ -202,9 +200,7 @@ function main {
                         $show.query = -join($title,".S",$season)
                 
                     } else {
-                        
-                        #$show.download_type = $null
-                        
+                       
                         $season = "{0:d2}" -f $show_next_season
 
                         $episode = "{0:d2}" -f $show_next_episode
@@ -273,10 +269,6 @@ function main {
             Clear-Host
 
             $Date = Get-Date
-
-            #Write-Host "$Date | Downloads added: RD $countRD - PM $countPM | Currently Monitored Items:"
-                       
-            #tohtml $trakt            
             
             $delimiter = ";"
 
@@ -333,6 +325,53 @@ function main {
                         $retries++
 
                         $query = $object.query
+                        
+                        $query_fallback = $object.query
+
+
+                        if($object.download_type -eq "episode" -and $retries -eq 5) {
+                            
+                            $retries = 0
+                            
+                            $object.download_type = "season"
+                             
+                            $season = "{0:d2}" -f $object.next_season
+
+                            $year = $object.year
+
+                            $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+
+                            $object.query = -join($title,".S",$season)
+
+                        }
+
+                        if($object.download_type -eq "episode") {
+                            
+                            $season = "{0:d2}" -f $object.next_season
+
+                            $episode = "{0:d2}" -f $object.next_episode
+
+                            $year = $object.year
+
+                            $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+                    
+                            $query_fallback = -join($title,".",$year,".S",$season,"E",$episode)                  
+                            
+                        
+                        }elseif($object.download_type -eq "season") {
+                            
+                            $season = "{0:d2}" -f $object.next_season
+
+                            $year = $object.year
+
+                            $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+                    
+                            $query_fallback = -join($title,".",$year,".S",$season)                  
+                            
+                        }
+
+
+                        #rarbg
 
                         $rarbg = new-object system.collections.arraylist 
 
@@ -358,13 +397,33 @@ function main {
                             
                             $hash = [regex]::matches($download, "(?<=btih:).*?(?=&)").value
                             
-                            if ([regex]::matches($title, "($query\.)", "IgnoreCase").value  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)", "IgnoreCase").value) {
+                            if (([regex]::matches($title, "($query\.)", "IgnoreCase").value -or [regex]::matches($title, "($query_fallback\.)", "IgnoreCase").value)  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)", "IgnoreCase").value) {
                                 
-                                $rarbg += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash}
-                            
-                            }
+                                $files = @()
+                                
+                                $response = Invoke-WebRequest -Uri http://magnet2torrent.com/upload/ -Body @{magnet = "$download"} -Method Post
 
-                            
+                                $filestext = [regex]::matches($response.RawContent, "(S[0-9].E[0-9].)", "IgnoreCase").value
+
+                                foreach($file in $filestext){
+    
+                                    $season = [int][regex]::matches($file, "(?<=S)..?(?=E)", "IgnoreCase").value
+                                    $episode = [int][regex]::matches($file, "(?<=E)..?", "IgnoreCase").value
+                                    $files += new-object psobject -property @{season=$season;episode=$episode}
+                                }
+                                if($object.download_type -eq "movie") {
+
+                                    $rarbg += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
+
+                                }elseif($files.season.Contains($object.next_season) -and $files.episode.Contains($object.next_episode)){
+
+                                    $rarbg += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
+                                
+                                }
+
+                                Sleep 1
+
+                            }
                         }
 
                         $object.scraper += @( $rarbg | Sort-Object -Property quality,seeders -Descending )
@@ -373,13 +432,9 @@ function main {
 
                         Sleep 5
 
+
                     } while ($object.scraper.hashes -eq $null -and $retries -le 5)
 
-                    if($retries -gt 5) {
-                       
-                        $object.scraper.hashes = $null #changed
-                    
-                    }
 
                 }
 
@@ -390,12 +445,16 @@ function main {
             Foreach ($object in $trakt) {
 
                 $object | Add-Member -type NoteProperty -name service -Value $null -Force
+
+                $object | Add-Member -type NoteProperty -name files -Value $null -Force
             
                 if($object.scraper.hashes -ne $null -and $object.status -le 2) {
 
                     $object.status = 3
                 
                     Foreach ($item in $object.scraper) {
+
+                        $object.files = $item.files
                 
                         $hashstring = $item.hashes
 
@@ -512,14 +571,11 @@ function main {
                         $torrent_status = $response.status
                     }
 
-
-                    #$large_files = $response.files | Where-Object {$_.bytes -gt 5000000}
-
                     $Post_File_Selection = @{
                         Method = "POST"
                         Uri =  "https://api.real-debrid.com/rest/1.0/torrents/selectFiles/$torrent_id"
                         Headers = $Header
-                        Body = @{ files = "all" } #$large_files.id -join ',' }
+                        Body = @{ files = "all" }
     
                     }
 
@@ -574,7 +630,7 @@ function main {
                     $type = $reference.type
 
                     if($reference.type -eq $null) {       
-                        if([regex]::matches($torrent_name, ".*?(?=\.s[0-9]{2})").Success) {
+                        if([regex]::matches($torrent_name, ".*?(?=\.s[0-9]{2})", "IgnoreCase").Success) {
                             $type = "tv"
                         }elseif([regex]::matches($torrent_name, ".*?(?=.[0-9]{4}\.)").Success){
                             $type = "movie"
@@ -646,6 +702,7 @@ function traktsync($reference) {
 
             $episodes = @()
 
+            $e = @()
 
             $object = $reference.next_season_id
 
@@ -676,11 +733,23 @@ function traktsync($reference) {
 
             if($reference.download_type.Contains("season")) {
          
-                $ids= $season_id
+                foreach($enumber in $reference.files.episode){
 
-                $season_id = @{"ids"= $ids}
+                    $e += @{"number"=$enumber}
 
-                $seasons += $season_id
+                }
+
+                $episodes += $e
+
+                $snumber = $reference.next_season
+
+                $s = @{"number"=$snumber;"episodes"=$episodes}
+
+                $seasons_ += $s
+               
+                $reference | Add-Member -type NoteProperty -name seasons -Value $seasons_ -Force
+               
+                $shows_ += $reference | Select title, year, ids, seasons
 
             }elseif ($reference.download_type.Contains("episode")){
 
@@ -730,24 +799,20 @@ function traktsync($reference) {
             Sleep 1
                     
             $post_watchlist_remove = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/watchlist/remove" -Method Post -Body $watchlist_remove -Headers @{"Content-type" = "application/json";"trakt-api-key" = "$trakt_client_id";"trakt-api-version" = "2";"Authorization" = "Bearer $trakt_access_token"} -WebSession $traktsession
+            
             $count++
-            #Write-Output $post_watchlist_remove.deleted   
-      
+   
             $collection_add = ConvertTo-Json -Depth 10 -InputObject @{
                 seasons=$seasons
                 shows=$shows_
                 movies = $movies
             }
 
-            #Write-Output $collection_add
-
-            #Write-Host
-
             Sleep 1
                     
             $post_collection_add = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection" -Method Post -Body $collection_add -Headers @{"Content-type" = "application/json";"trakt-api-key" = "$trakt_client_id";"trakt-api-version" = "2";"Authorization" = "Bearer $trakt_access_token"}  -WebSession $traktsession
+            
             $count++  
-            #Write-Output $post_collection_add
 
             $reference.status = 1
 
@@ -768,7 +833,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
     }
 
     $trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
-
+    
     $trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
 
     $get_token = ConvertTo-Json -InputObject @{
@@ -866,7 +931,7 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
 
     $paramsini = @{
         trakt_client_id = "bf93b45f96cd6ed2d0217d660f36ebd8f4337446a875b53a1f9332a326ef61ea"
-    	trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
+        trakt_client_secret = "cc6051d03aa726c9a98019d661be891c23b6a96db0e2a7c53a8fc433f080bbc4"
         trakt_access_token = $trakt_access_token
         real_debrid_token = $real_debrid_token
         premiumize_api_key = $premiumize_api_key 
