@@ -96,8 +96,7 @@ Programming Stuff:
 
 Future To-Do's
         
+        - FileHoster support! Ive added a scraper for HDEncode.com, but i need to see how I can implement it in the current script flow.
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
-        - Add Fileshare Services as alternative download source for torrents. Maybe hdencode?
-        - shows that are formatted "title.year.S01E01" arent found. Fallback query is prepared, just not implemented
         - I cant get the Console to update indepently from the WebUI.
         - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
