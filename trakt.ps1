@@ -262,3 +262,7 @@ function trakt($settings) {
             $trakt
 
 }
+
+$settings = Import-Clixml -Path .\params.xml
+
+$trakt = trakt $settings

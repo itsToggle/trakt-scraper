@@ -29,9 +29,9 @@ function torrent($trakt, $settings) {
                         $query_fallback = $object.query
 
 
-                        if($object.download_type -eq "episode" -and $retries -eq 5) {
+                        if($object.download_type -eq "episode" -and $retries -eq 2) {
                             
-                            $retries = 0
+                            $retries = 1
                             
                             $object.download_type = "season"
                              
@@ -42,6 +42,8 @@ function torrent($trakt, $settings) {
                             $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
 
                             $object.query = -join($title,".S",$season)
+
+                            #Write-Host "fallback episode"
 
                         }
 
@@ -70,9 +72,18 @@ function torrent($trakt, $settings) {
                             
                         }
 
+                        if($retries -eq 2){
+                            $object.query = $query_fallback
+                            #$query_fallback
+                        }
+
                         $scraper = new-object system.collections.arraylist 
 
                         $items = scrape_torrents $object
+
+                        #$items.download
+
+                        $query = $object.query
 
                         Foreach ($item in $items) {
                             
@@ -115,13 +126,15 @@ function torrent($trakt, $settings) {
 
                                 $torrent_status = $response.status
 
-                                $retries = 0
+                                $retries_ = 0
+
+                                #$response.files.path
 
                                 sleep 1
 
-                                while( $torrent_status -eq "magnet_conversion" -and $retries -lt 1){
-                                    $retries++
-                                    Sleep 10
+                                while( $torrent_status -eq "magnet_conversion" -and $retries_ -le 1){
+                                    $retries_++
+                                    Sleep 2
                                     $response = Invoke-RestMethod @Get_Torrent_Info
                                     $torrent_status = $response.status
                                 }
@@ -164,7 +177,7 @@ function torrent($trakt, $settings) {
                         Sleep 5
 
 
-                    } while ($object.scraper.hashes -eq $null -and $retries -le 5)
+                    } while ($object.scraper.hashes -eq $null -and $retries -lt 2)
 
 
                 }
@@ -415,3 +428,7 @@ function torrent($trakt, $settings) {
             Sleep 10      
 
 }
+
+$settings = Import-Clixml -Path .\params.xml
+
+torrent $trakt $settings
