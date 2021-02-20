@@ -18,7 +18,7 @@ What it does:
                - Releases that contain partial seasons (e.g. title.S01.Part1) are now fully supported
     
         (2.5. Filehoster scraping:)
-                    - Ive implemented a scraper for hdencode.com, the scraped links are yet processed tho.
+                    - Ive implemented a scraper for hdencode.com, the scraped links arent yet processed tho.
                     - This requires some additional stuff like unraring the downloaded files etc.
     
     3. debrid: 
