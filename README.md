@@ -12,10 +12,14 @@ What it does:
                - Your trakt collection is monitored for newly released content.
                - Your watchlist acts as a download queue for content you havent collected.
     
-    2. rarbg:
-               - If new content is found, a scraper for rarbg.to searches for the best quality/best seeded torrent
+    2. torrent scraping:
+               - If new content is found, a scraper for rarbg, 1337x and magnetdl searches for the best quality/best seeded torrent
                - If a season of a tv show is fully released, season packs are prefered.
                - Releases that contain partial seasons (e.g. title.S01.Part1) are now fully supported
+    
+        (2.5. Filehoster scraping:)
+                    - Ive implemented a scraper for hdencode.com, the scraped links are yet processed tho.
+                    - This requires some additional stuff like unraring the downloaded files etc.
     
     3. debrid: 
                - Debrid Services (Real Debrid and Premiumize) are searched for a cached version of the scraped torrent
