@@ -16,7 +16,7 @@
 
 function scrape_torrents($object) {
 
-    $query = "The.Expanse.S04E01"#$object.query #e.g. "The.Hobbit.2004" or "Breaking.Bad.S01E01"
+    $query = #$object.query #e.g. "The.Hobbit.2004" or "Breaking.Bad.S01E01"
     
     $tmdb = $object.ids.tmdb #tmdb ID
 
