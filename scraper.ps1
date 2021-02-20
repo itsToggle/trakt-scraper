@@ -1,6 +1,6 @@
 ﻿# Scraper Script
 #
-# the scraper functions recieve a trakt object with the properties title,year,ids(trakt,slug,tvdb,imdb,tmdb),type(tv,movie), and a lot more.
+# The scraper functions recieve a trakt object with the properties title,year,ids(trakt,slug,tvdb,imdb,tmdb),type(tv,movie), and a lot more.
 #
 
 
