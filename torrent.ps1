@@ -429,6 +429,6 @@ function torrent($trakt, $settings) {
 
 }
 
-$settings = Import-Clixml -Path .\params.xml
+#$settings = Import-Clixml -Path .\params.xml
 
-torrent $trakt $settings
+#torrent $trakt $settings
