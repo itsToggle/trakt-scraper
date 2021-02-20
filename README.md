@@ -98,6 +98,6 @@ Future To-Do's
         
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
         - Add Fileshare Services as alternative download source for torrents. Maybe hdencode?
+        - shows that are formatted "title.year.S01E01" arent found. Fallback query is prepared, just not implemented
         - I cant get the Console to update indepently from the WebUI.
-        - Only Rarbg is currently scraped
         - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
