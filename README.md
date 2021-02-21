@@ -1,6 +1,6 @@
 # trakt-scraper
 
-A Powershell script to manage your media collection through trakt, with torrent scraping and debrid support.
+A Powershell script to manage your media collection through trakt, with torrent and filehoster scraping and debrid support.
 
 This script is not going to be maintained. Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
 
@@ -17,9 +17,11 @@ What it does:
                - If a season of a tv show is fully released, season packs are prefered.
                - Releases that contain partial seasons (e.g. title.S01.Part1) are now fully supported
     
-        (2.5. Filehoster scraping:)
-                    - Ive implemented a scraper for hdencode.com, the scraped links arent yet processed tho.
-                    - This requires some additional stuff like unraring the downloaded files etc.
+    2.5. Filehoster scraping:
+               - If no torrent is found, hdencode.com gets scraped for a matching filehoster upload
+               - The downloads arent currently unrar'ed after download.
+               - Multihoster download is not yet supported.
+               - I might add a switch so you can choose to only download from one source.
     
     3. debrid: 
                - Debrid Services (Real Debrid and Premiumize) are searched for a cached version of the scraped torrent
@@ -57,50 +59,8 @@ WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
 
-Programming Stuff:
-
-        -The Script first checks if the params.xml file is present in the current dir.
-            -If not, the first launch setup is started. The user inputs are saved in the params.xml file.
-        -The params.xml is imported.
-        -Aria2c is launched as a Background Job.
-        -The Trakt Scraper is started as a Background Job.
-            -New content is determined with an API call to trakt.tv
-                -The trakt "collection" is searched for upcoming or newly released episodes. These are processed further.
-                -The trakt "watchlist" is compared to the collection. Everything that isnt collected is processed further.
-            -If the as "new" determined content is released, it is written out as a search query
-                -If the content is a movie, the query is in format: Title.Year (Movie)
-                -If a season is fully released, the query is in format: Title.S01 / Title.Year.S01 (Season Pack)
-                -If a season isnt fully released, the query is in format: Title.S01E01 / Title.Year.S01E01 (Episode)
-            -An API call to rarbg.to's API is made with the query
-            -The response is sorted by video quality and seeders
-                -An API call to RealDebrid is made to gather the torrents file lists.
-                -If an episode cant be found, a fallback to search for a season pack containing the episode is made.
-            -An API call to the debrid services is made for each torrent (or magnet link to be more precise)
-            -If one of the torrents is cached, the direct links are send to Aria2c via an API call
-                -The trakt collection is updated with the newly downloaded content.
-                -Seasons Packs are collected by the episodes found in the torrents file list
-            -If none are chached, the best quality torrent is added to the debrid services for cloud download
-                -The trakt collection is updated with the new content.
-                -Seasons Packs are collected by the episodes found in the torrents file list
-            -The debrid services are periodically checked for finished torrents via an API call
-            -If a torrent is finished, the direct links are sent to Aria2c via an API call.
-            -Finished torrents are removed from the debrid services
-        -The HTML Server is started
-            -A "GET" request is recieved
-                - The Output from the Trakt Scraper Background Job is displayed as a Table
-                - An API call to Aria2c is made to get information on waiting/running/finished downloads
-                - The Output is displayed as a Table
-                - An API call to RealDebrid is made to get information on waiting/running/finished torrents
-                - The Output is displayed as a Table
-                - The Function "tohtml" is called
-                    - This turns everything currently displayed on the console window into an html format
-                    - A Header is added that tells the website to refresh itself every 5 seconds. This means a new Get request is sent every 5s.
-                - The html formatted string is sent to the recipient.
-
-
 Future To-Do's
-        
-        - FileHoster support! Ive added a scraper for HDEncode.com, but i need to see how I can implement it in the current script flow.
+        - More filehoster scrapers. HDEncode.com is pretty much the best, but there are some forums that have more releases. These could be accessable if a username and password are provided by the user.
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
         - I cant get the Console to update indepently from the WebUI.
         - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
