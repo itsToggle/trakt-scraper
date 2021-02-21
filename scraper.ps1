@@ -27,12 +27,20 @@ function scrape_torrents($object) {
     $imdb = $object.ids.imdb #imdb ID
 
     #
+    # enable or disable the scrapers you want:
+    #
 
     $rarbg = $true
 
     $magnetdl = $false
 
     $1337x = $false
+
+
+    #
+    # Scrapers:
+    #
+
 
 
     #rarbg
