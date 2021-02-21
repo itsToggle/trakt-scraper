@@ -2,7 +2,7 @@
 #
 # Collects content and clears the watchlist
 
-function sync($reference, $settings) {
+function sync($object, $settings) {
 
     $trakt_client_id = $settings.trakt_client_id
     $trakt_client_secret = $settings.trakt_client_secret
@@ -27,35 +27,35 @@ function sync($reference, $settings) {
 
     $e = @()
 
-    $object = $reference.next_season_id
+    $object_ = $object.next_season_id
 
-    $candidateProps = $object.psobject.properties.Name
+    $candidateProps = $object_.psobject.properties.Name
 
-    $nonNullProps = $candidateProps.Where({ $null -ne $object.$_ })
+    $nonNullProps = $candidateProps.Where({ $null -ne $object_.$_ })
 
-    $season_id = $object | Select-Object $nonNullProps
-
-
-    $object = $reference.next_episode_id
-
-    $candidateProps = $object.psobject.properties.Name
-
-    $nonNullProps = $candidateProps.Where({ $null -ne $object.$_ })
-
-    $episode_id = $object | Select-Object $nonNullProps
+    $season_id = $object_ | Select-Object $nonNullProps
 
 
-    $object = $reference.ids
+    $object_ = $object.next_episode_id
 
-    $candidateProps = $object.psobject.properties.Name
+    $candidateProps = $object_.psobject.properties.Name
 
-    $nonNullProps = $candidateProps.Where({ $null -ne $object.$_ })
+    $nonNullProps = $candidateProps.Where({ $null -ne $object_.$_ })
 
-    $nonnullids = $object | Select-Object $nonNullProps
+    $episode_id = $object_ | Select-Object $nonNullProps
 
-    if($reference.download_type.Contains("season")) {
+
+    $object_ = $object.ids
+
+    $candidateProps = $object_.psobject.properties.Name
+
+    $nonNullProps = $candidateProps.Where({ $null -ne $object_.$_ })
+
+    $nonnullids = $object_ | Select-Object $nonNullProps
+
+    if($object.download_type.Contains("season")) {
          
-        foreach($enumber in $reference.files.episode){
+        foreach($enumber in $object.files.episode){
 
             $e += @{"number"=$enumber}
 
@@ -63,37 +63,37 @@ function sync($reference, $settings) {
 
         $episodes += $e
 
-        $snumber = $reference.next_season
+        $snumber = $object.next_season
 
         $s = @{"number"=$snumber;"episodes"=$episodes}
 
         $seasons_ += $s
                
-        $reference | Add-Member -type NoteProperty -name seasons -Value $seasons_ -Force
+        $object | Add-Member -type NoteProperty -name seasons -Value $seasons_ -Force
                
-        $shows_ += $reference | Select title, year, ids, seasons
+        $shows_ += $object | Select title, year, ids, seasons
 
-    }elseif ($reference.download_type.Contains("episode")){
+    }elseif ($object.download_type.Contains("episode")){
 
-        $enumber = $reference.next_episode
+        $enumber = $object.next_episode
 
         $e = @{"number"=$enumber}
 
         $episodes += $e
 
-        $snumber = $reference.next_season
+        $snumber = $object.next_season
 
         $s = @{"number"=$snumber;"episodes"=$episodes}
 
         $seasons_ += $s
                
-        $reference | Add-Member -type NoteProperty -name seasons -Value $seasons_ -Force
+        $object | Add-Member -type NoteProperty -name seasons -Value $seasons_ -Force
                
-        $shows_ += $reference | Select title, year, ids, seasons   
+        $shows_ += $object | Select title, year, ids, seasons   
 
     }
         
-    if ($reference.type.Contains("movie")){
+    if ($object.type.Contains("movie")){
 
         $ids= $nonnullids
 
@@ -103,7 +103,7 @@ function sync($reference, $settings) {
 
     }
         
-    if($reference.type.Contains("tv")) {
+    if($object.type.Contains("tv")) {
 
         $ids= $nonnullids 
 
@@ -132,6 +132,8 @@ function sync($reference, $settings) {
                     
     $post_collection_add = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection" -Method Post -Body $collection_add -Headers @{"Content-type" = "application/json";"trakt-api-key" = "$trakt_client_id";"trakt-api-version" = "2";"Authorization" = "Bearer $trakt_access_token"}  -WebSession $traktsession
             
-    $reference.status = 1
+    $object.status = 1
+
+    Write-Output $true
 
 }

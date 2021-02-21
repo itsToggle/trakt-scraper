@@ -21,7 +21,7 @@ $traktscraper = {
     
         . .\trakt.ps1
 
-        . .\torrent.ps1
+        . .\download.ps1
 
         while(1) {
     
@@ -45,7 +45,7 @@ $traktscraper = {
 
             }
         
-            torrent $trakt $settings
+            download $trakt $settings
 
         }
             

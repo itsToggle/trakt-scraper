@@ -4,7 +4,7 @@
 #
 
 
-function scrape_torrents($object) {
+function scrape_magnets($object) {
     
     # the scrape_torrents function must return an object with the following properties:
     #      
@@ -178,4 +178,173 @@ function scrape_hosters($object) {
         #...
 }
 
-#scrape_torrents $trakt[3]
+function torrent($object, $settings){
+     
+     $scraper = new-object system.collections.arraylist 
+
+     Write-Output "scraping torrents: " $object.query
+
+     $items = scrape_magnets $object
+
+     $items  | Format-Table
+
+     $query = $object.query
+
+     Foreach ($item in $items) {
+                            
+        $title = $item.title
+                            
+        $quality = [regex]::matches($title, "(1080)|(720)|(2160)").value 
+                            
+        $download = $item.download
+                            
+        $seeders = $item.seeders
+                            
+        $hash = [regex]::matches($download, "(?<=btih:).*?(?=&)").value
+                            
+        if ([regex]::matches($title, "($query\.)", "IgnoreCase").value  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)", "IgnoreCase").value) {
+                                            
+            if($object.download_type -ne "movie") {
+                
+                $files = @()
+                                
+                $Header = @{
+                    "authorization" = "Bearer $real_debrid_token"
+                }
+
+                $Post_Magnet = @{
+                    Method = "POST"
+                    Uri =  "https://api.real-debrid.com/rest/1.0/torrents/addMagnet"
+                    Headers = $Header
+                    Body = @{ magnet = $download }
+                }
+
+                $response = Invoke-RestMethod @Post_Magnet -WebSession $realdebridsession
+
+                $torrent_id = $response.id
+
+                $Get_Torrent_Info = @{
+                    Method = "GET"
+                    Uri = "https://api.real-debrid.com/rest/1.0/torrents/info/$torrent_id"
+                    Headers = $Header
+                }
+
+                $response = Invoke-RestMethod @Get_Torrent_Info -WebSession $realdebridsession
+
+                $torrent_status = $response.status
+
+                $retries_ = 0
+
+                sleep 1
+
+                while( $torrent_status -eq "magnet_conversion" -and $retries_ -le 1){
+                    $retries_++
+                    Sleep 2
+                    $response = Invoke-RestMethod @Get_Torrent_Info
+                    $torrent_status = $response.status
+                }
+
+                $Delete_Torrent = @{
+                    Method = "DELETE"
+                    Uri =  "https://api.real-debrid.com/rest/1.0/torrents/delete/$torrent_id"
+                    Headers = @{"authorization" = "Bearer $real_debrid_token"}
+                }
+                    
+                $piss = Invoke-RestMethod @Delete_Torrent -WebSession $realdebridsession
+
+                $filestext = [regex]::matches($response.files.path, "(S[0-9].E[0-9].)", "IgnoreCase").value
+
+                foreach($file in $filestext){
+                    $season = [int][regex]::matches($file, "(?<=S)..?(?=E)", "IgnoreCase").value
+                    $episode = [int][regex]::matches($file, "(?<=E)..?", "IgnoreCase").value
+                    $files += new-object psobject -property @{season=$season;episode=$episode}
+                }
+                                
+            }
+
+            if($object.download_type -eq "movie") {
+
+                $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
+
+            }elseif($files.season.Contains($object.next_season) -and $files.episode.Contains($object.next_episode)){
+                
+                Write-Output "result contains next episode: " $item.title
+
+                $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
+                                
+            }
+
+            Sleep 1
+        }
+
+    }
+
+    $object.scraper += @( $scraper | Sort-Object -Property quality,seeders -Descending )
+
+    $object.status = 2
+
+    Sleep 5
+
+}
+
+function hoster($object) {
+     
+     $scraper = new-object system.collections.arraylist 
+
+     Write-Output "scraping hosters: " $object.query
+
+     $items = scrape_hosters $object
+
+     $items  | Format-Table
+
+     $query = $object.query
+
+     Foreach ($item in $items) {
+                            
+        $title = $item.title
+                            
+        $quality = [regex]::matches($title, "(1080)|(720)|(2160)").value 
+                            
+        $download = $item.download
+                                                        
+        if ([regex]::matches($title, "($query\.)", "IgnoreCase").value  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)", "IgnoreCase").value) {
+                                            
+            if($object.download_type -ne "movie") {
+                
+                $files = @()
+
+                $filestext = [regex]::matches($item.files, "(S[0-9].E[0-9].)", "IgnoreCase").value
+
+                foreach($file in $filestext){
+                    $season = [int][regex]::matches($file, "(?<=S)..?(?=E)", "IgnoreCase").value
+                    $episode = [int][regex]::matches($file, "(?<=E)..?", "IgnoreCase").value
+                    $files += new-object psobject -property @{season=$season;episode=$episode}
+                }
+                                
+            }
+
+            if($object.download_type -eq "movie") {
+
+                $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;hoster=$download;files=$files}
+
+            }elseif($files.season.Contains($object.next_season) -and $files.episode.Contains($object.next_episode)){
+                
+                Write-Output "result contains next episode :" $item.title
+
+                $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;hoster=$download;files=$files}
+
+                $object.files = $files
+                                
+            }
+
+            Sleep 1
+        }
+
+    }
+
+    $object.scraper += @( $scraper | Sort-Object -Property quality -Descending )
+
+    $object.status = 2
+
+    Sleep 5
+}

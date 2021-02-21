@@ -174,7 +174,7 @@ function trakt($settings) {
 
                             $episode = "{0:d2}" -f $show_next_episode
 
-                            $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+                            $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
 
                             $show.download_type = "episode"
                     
@@ -186,7 +186,7 @@ function trakt($settings) {
                 
                         $season = "{0:d2}" -f $show_next_season
 
-                        $title = $show.title-replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+                        $title = $show.title-replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
 
                         $show.download_type = "season"
                 
@@ -198,7 +198,7 @@ function trakt($settings) {
 
                         $episode = "{0:d2}" -f $show_next_episode
 
-                        $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+                        $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
 
                         $show.download_type = "episode"
                     
@@ -231,7 +231,7 @@ function trakt($settings) {
                
                 if(-Not $trakt.title.Contains($entry.movie.title)) {
 
-                    $title = $entry.movie.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','')
+                    $title = $entry.movie.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
 
                     $query = -join($title,".",$entry.movie.year) 
 
