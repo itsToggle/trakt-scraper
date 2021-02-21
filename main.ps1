@@ -29,10 +29,12 @@ $traktscraper = {
 
             Clear-Host
 
-            Write-Output ";"
+            Write-Output ";;;;;"
 
             Write-Output $trakt  | Where-Object {$_.next_season -ne $null -or $_.download_type -ne $null} |  Sort-Object -Property release_wait | Format-Table -Property @{ e='title'; width = 30 },@{ e='collected'; width = 15 },@{ e='next'; width = 15 },@{ e='download_type'; width = 15 },@{ e='release_wait'; width = 15 }
             
+            Write-Output ";;;;;"
+
             if($trakt.download_type.Contains("episode") -or $trakt.download_type.Contains("season")){
 
                 Sleep 10

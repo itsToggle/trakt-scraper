@@ -16,9 +16,9 @@ function WebUi {
 
     $new = $Job.ChildJobs.Output | Out-String
 
-    $TraktScraperOutput = $new.Split(";")
+    $TraktScraperOutput = $new -split(";;;;;")
 
-    $TraktScraperOutput[-1]            
+    $TraktScraperOutput[-2]            
 
     $real_debrid_token = $settings.real_debrid_token
 
@@ -213,5 +213,10 @@ function WebUi {
             
             Write-Host
 
+            Write-Host "Log:"
+
+            $TraktScraperOutput[-1]
+            
+            Write-Host    
 
 }

@@ -1,6 +1,6 @@
 ﻿# Scraper Script
 #
-# The scraper functions recieve a trakt object with the properties title,year,ids(trakt,slug,tvdb,imdb,tmdb),type(tv,movie), and a lot more.
+# the scraper functions recieve a trakt object with the properties title,year,ids(trakt,slug,tvdb,imdb,tmdb),type(tv,movie), and a lot more.
 #
 
 
@@ -26,8 +26,17 @@ function scrape_torrents($object) {
 
     $imdb = $object.ids.imdb #imdb ID
 
+    #
 
-    #rarbg 
+    $rarbg = $true
+
+    $magnetdl = $false
+
+    $1337x = $false
+
+
+    #rarbg
+    if($rarbg){ 
         #the "do while" is because rarbgs api is unreliable.
         do{
             #build the uri
@@ -47,8 +56,10 @@ function scrape_torrents($object) {
 
         #output the required properties
         $rarbg | select title,seeders,download
+    }
 
     #magnetdl
+    if($magnetdl){
         #build the uri, replace "." in the query with "+", e.g. The+Expanse+S04E01
         $uri = -join ('https://www.magnetdl.com/search/?q=', $query.Replace(".","+"), '&m=1&x=0&y=0')
         #make the api call
@@ -67,8 +78,10 @@ function scrape_torrents($object) {
         }
         #Output the required properties
         $magnetdl | select title,seeders,download
+    }
         
     #1337x
+    if($1337x){
         #build the uri
         $uri = -join ('https://1337x.to/srch?search=', $query)
         #make the api call
@@ -91,6 +104,7 @@ function scrape_torrents($object) {
         }
         #Output the required properties
         $1337x | select title,seeders,download
+    }
 
     #other scraper
         #build the uri

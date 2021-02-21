@@ -14,6 +14,10 @@ function torrent($trakt, $settings) {
     $premiumize_api_key = $settings.premiumize_api_key
     $path_to_downloads = $settings.path_to_downloads
 
+# Test-Objects
+#$trakt = new-object system.collections.arraylist
+#$trakt = new-object psobject -property @{status=1;download_type="movie";query="The.Expanse.S04";scraper=$null;cached=$null;hashed=$null}
+
     Foreach ($object in $trakt) {
 
                 if ($object.query -ne $null -and $object.status -le 1) { 
@@ -81,7 +85,9 @@ function torrent($trakt, $settings) {
 
                         $items = scrape_torrents $object
 
-                        #$items.download
+                        Write-Host "scraped magnets"
+
+                        $items  | Format-Table
 
                         $query = $object.query
 
@@ -99,62 +105,66 @@ function torrent($trakt, $settings) {
                             
                             if (([regex]::matches($title, "($query\.)", "IgnoreCase").value -or [regex]::matches($title, "($query_fallback\.)", "IgnoreCase").value)  -And -Not [regex]::matches($title, "(REMUX)|(\.3D\.)", "IgnoreCase").value) {
                                 
-                                $files = @()
+                                if(-not $object.download_type -eq "movie") {
+                                    $files = @()
                                 
-                                $Header = @{
-                                    "authorization" = "Bearer $real_debrid_token"
-                                }
+                                    $Header = @{
+                                        "authorization" = "Bearer $real_debrid_token"
+                                    }
 
-                                $Post_Magnet = @{
-                                    Method = "POST"
-                                    Uri =  "https://api.real-debrid.com/rest/1.0/torrents/addMagnet"
-                                    Headers = $Header
-                                    Body = @{ magnet = $download }
-                                }
+                                    $Post_Magnet = @{
+                                        Method = "POST"
+                                        Uri =  "https://api.real-debrid.com/rest/1.0/torrents/addMagnet"
+                                        Headers = $Header
+                                        Body = @{ magnet = $download }
+                                    }
 
-                                $response = Invoke-RestMethod @Post_Magnet -WebSession $realdebridsession
+                                    $response = Invoke-RestMethod @Post_Magnet -WebSession $realdebridsession
 
-                                $torrent_id = $response.id
+                                    $torrent_id = $response.id
 
-                                $Get_Torrent_Info = @{
-                                    Method = "GET"
-                                    Uri = "https://api.real-debrid.com/rest/1.0/torrents/info/$torrent_id"
-                                    Headers = $Header
-                                }
+                                    $Get_Torrent_Info = @{
+                                        Method = "GET"
+                                        Uri = "https://api.real-debrid.com/rest/1.0/torrents/info/$torrent_id"
+                                        Headers = $Header
+                                    }
 
-                                $response = Invoke-RestMethod @Get_Torrent_Info -WebSession $realdebridsession
+                                    $response = Invoke-RestMethod @Get_Torrent_Info -WebSession $realdebridsession
 
-                                $torrent_status = $response.status
-
-                                $retries_ = 0
-
-                                #$response.files.path
-
-                                sleep 1
-
-                                while( $torrent_status -eq "magnet_conversion" -and $retries_ -le 1){
-                                    $retries_++
-                                    Sleep 2
-                                    $response = Invoke-RestMethod @Get_Torrent_Info
                                     $torrent_status = $response.status
-                                }
 
-                                $Delete_Torrent = @{
-                                    Method = "DELETE"
-                                    Uri =  "https://api.real-debrid.com/rest/1.0/torrents/delete/$torrent_id"
-                                    Headers = @{"authorization" = "Bearer $real_debrid_token"}
-                                }
+                                    $retries_ = 0
+
+                                    sleep 1
+
+                                    while( $torrent_status -eq "magnet_conversion" -and $retries_ -le 1){
+                                        $retries_++
+                                        Sleep 2
+                                        $response = Invoke-RestMethod @Get_Torrent_Info
+                                        $torrent_status = $response.status
+                                    }
+
+                                    $Delete_Torrent = @{
+                                        Method = "DELETE"
+                                        Uri =  "https://api.real-debrid.com/rest/1.0/torrents/delete/$torrent_id"
+                                        Headers = @{"authorization" = "Bearer $real_debrid_token"}
+                                    }
                     
-                                $piss = Invoke-RestMethod @Delete_Torrent -WebSession $realdebridsession
+                                    $piss = Invoke-RestMethod @Delete_Torrent -WebSession $realdebridsession
 
-                                $filestext = [regex]::matches($response.files.path, "(S[0-9].E[0-9].)", "IgnoreCase").value
+                                    Write-Host "magnet file list compiled"
 
-                                foreach($file in $filestext){
+                                    $filestext = [regex]::matches($response.files.path, "(S[0-9].E[0-9].)", "IgnoreCase").value
+
+                                    foreach($file in $filestext){
     
-                                    $season = [int][regex]::matches($file, "(?<=S)..?(?=E)", "IgnoreCase").value
-                                    $episode = [int][regex]::matches($file, "(?<=E)..?", "IgnoreCase").value
-                                    $files += new-object psobject -property @{season=$season;episode=$episode}
+                                        $season = [int][regex]::matches($file, "(?<=S)..?(?=E)", "IgnoreCase").value
+                                        $episode = [int][regex]::matches($file, "(?<=E)..?", "IgnoreCase").value
+                                        $files += new-object psobject -property @{season=$season;episode=$episode}
+                                    }
+                                
                                 }
+
                                 if($object.download_type -eq "movie") {
 
                                     $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
@@ -217,12 +227,18 @@ function torrent($trakt, $settings) {
                         $body_pm = -join("https://www.premiumize.me/api/cache/check?items%5B%5D=",$magnet,"&apikey=",$premiumize_api_key)
 
                         $check_cache_RD = Invoke-WebRequest @Post_Hash -WebSession $realdebridsession
-                
-                        $check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession
 
+                        $fuck = $check_cache_RD.content | ConvertFrom-Json
+
+                        $fuck = $fuck.$hashstring.rd | Get-Member -MemberType Properties | Select-Object Name
                         
+                        $cachedid = $fuck.Name
+
+                        $check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession                 
 
                         if($check_cache_PM.response){
+                            
+                            Write-Host "Premiumize cache found"
                     
                             $object.service = "PM"
 							
@@ -244,6 +260,10 @@ function torrent($trakt, $settings) {
 
                             sync $object $settings
 
+                            Write-Host "Trakt sucessfully synced for item:"
+
+                            $object
+
                             $count++
 
                             $count++
@@ -253,6 +273,8 @@ function torrent($trakt, $settings) {
                             break
 
                         }elseif([int]$check_cache_RD.RawContentLength -gt [int]"60") {
+
+                            Write-Host "RealDebrid cache found"
 
                             $object.service = "RD"
  
@@ -279,9 +301,15 @@ function torrent($trakt, $settings) {
             
                     $magnet = $object.scraper.magnets[0]
 
+                    $cached_files = @{ files = "all" }
+
                     if($object.cached -ne $null) {
                         
                         $magnet = $object.cached
+
+                        $cached_files = @{files = $cachedid -join ',' }
+
+                        $cached_files
                     }
     
                     $Header = @{
@@ -319,7 +347,7 @@ function torrent($trakt, $settings) {
                         Method = "POST"
                         Uri =  "https://api.real-debrid.com/rest/1.0/torrents/selectFiles/$torrent_id"
                         Headers = $Header
-                        Body = @{ files = "all" }
+                        Body = $cached_files
     
                     }
 
@@ -414,6 +442,10 @@ function torrent($trakt, $settings) {
                 }
 
                 if($reference.type -ne $null) {
+
+                    Write-Host "Trakt sucessfully synced for item:"
+
+                    $reference
 
                     sync $reference $settings
 
