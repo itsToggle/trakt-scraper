@@ -19,9 +19,6 @@ What it does:
     
     2.5. Filehoster scraping:
                - If no torrent is found, hdencode.com gets scraped for a matching filehoster upload
-               - The downloads arent currently unrar'ed after download.
-               - Multihoster download is not yet supported.
-               - I might add a switch so you can choose to only download from one source.
     
     3. debrid: 
                - Debrid Services (Real Debrid and Premiumize) are searched for a cached version of the scraped torrent
@@ -29,6 +26,7 @@ What it does:
                - If no cached torrents are available, the best seeded torrent is added to a debrid service's download queue
                - The download is monitored in the background. Once its available for direct download, it gets send to Aria2c
                - Once added to Aria2c the torrent is deleted from the Debrid Service.
+               - finished Downloads are unrar'ed
                
     4. trakt:
                - Downloaded content is added to the trakt collection
