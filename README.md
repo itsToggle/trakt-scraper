@@ -58,6 +58,7 @@ WebUi:
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
 
 Future To-Do's
+        
         - More filehoster scrapers. HDEncode.com is pretty much the best, but there are some forums that have more releases. These could be accessable if a username and password are provided by the user.
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
         - I cant get the Console to update indepently from the WebUI.
