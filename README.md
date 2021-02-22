@@ -40,12 +40,13 @@ Getting started:
             - A Real Debrid Account is mandatory. Without it the script wont work.
             - (Premiumize Account) This is optional. It will improve the chances of finding a chached torrent.
             - Aria2c
+            - WinRar
     1. Trakt Preperation:
             - Clean Up a little :)
             - Everything in your collection will be monitored for new episodes.
             - Everything in your watchlist (that isnt already in your collection) will be downloaded. 
     2. First Launch:
-            - The main script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services and Aria2c.
+            - The main script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services, Aria2c and WinRar.
     3. WebUI Setup:
             - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
             - https://stackoverflow.com/questions/4019466/httplistener-access-denied/4115328.
@@ -56,6 +57,12 @@ Getting started:
 WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
+
+Known Bugs:
+
+        - The Script crashes if you select text in the consol window. No idea why that is...
+        - Special Characters. Ive tried to think of every Character that could pop up in a Movie/Show Title, but I could always miss one.
+
 
 Future To-Do's
         
