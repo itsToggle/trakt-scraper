@@ -95,6 +95,26 @@ function setup {
         }
     }
 
+    Write-Host
+    
+    Write-Host "The Script starts an instance of WinRar's unrar.exe in the background. To function properly, please provide the path to your unrar.exe"
+    
+    $path_to_winrar = "C:\unrar.exe"
+
+    Write-Host
+
+    while(-Not(Test-Path (-join($path_to_winrar,"unrar.exe")) -PathType Leaf)){
+
+        $path_to_winrar = Read-Host -Prompt 'Please enter the path in the format C:\path\to\'
+
+        if((Test-Path $path_to_winrar -PathType Leaf)){
+            clear
+            Write-Host "Successfully connected to WinRar!"
+        }else{
+            Write-Host "Path seems to be wrong."
+        }
+    }
+
     clear
 
     Write-Host "The Script creates the following folders for your downloads: tv,movie,default."
@@ -105,7 +125,7 @@ function setup {
 
     clear
 
-    Write-Host "Success! Your parameters will now be saved as params.xml. You can edit this file any time."
+    Write-Host "Success! Your parameters will now be saved as parameters.xml. You can edit this file any time."
 
     $paramsini = @{
         trakt_client_id = "$trakt_client_id"
@@ -114,16 +134,17 @@ function setup {
         real_debrid_token = $real_debrid_token
         premiumize_api_key = $premiumize_api_key 
         path_to_aria2c = $path_to_aria2c
+        path_to_winrar = $path_to_winrar
         path_to_downloads = $path_to_downloads
     }
 
     $paramsini
 
-    $paramsini | Export-Clixml -Path .\params.xml
+    $paramsini | Export-Clixml -Path .\parameters.xml
 
     Write-Host
 
-    Write-Host "Please ensure all paramters are correct. If youve made any mistakes, delete the params.xml file before restarting."
+    Write-Host "Please ensure all paramters are correct. If youve made any mistakes, delete the parameters.xml file before restarting."
 
     Write-Host
 

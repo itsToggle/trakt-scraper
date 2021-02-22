@@ -55,14 +55,70 @@ $traktscraper = {
 
 } 
 
+$unrar = {   
+    
+    $path_to_winrar = -join($args[0].path_to_winrar, "unrar.exe")
+    
+    while(1){
+        
+        Write-Output "Running..."
 
-if(-Not (Test-Path .\params.xml -PathType Leaf)) {
+        $stopped = Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.tellStopped`",`"params`":[`"token:premiumizer`",-1,50]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
+
+        $finished = $stopped.result
+
+        if($finished -ne $null) {
+
+            foreach($download in $finished){
+
+                if($download.files.path.Contains(".rar")){
+        
+                    $dirfile = $download.files.path
+
+                    $dirdestination = $download.dir
+
+                    if(Test-Path $dirfile -PathType Leaf){
+
+                        Write-Output "Testing File: " $dirfile
+                             
+                        $log = [string](&$path_to_winrar t $dirfile)
+
+                        if($log.Contains("All OK")){
+
+                            Write-Output "Unrar: " $dirfile
+                
+                            $log = [string](&$path_to_winrar x -y -o- $dirfile $dirdestination)
+
+                            if($log.Contains("All OK")){
+                                
+                                Write-Output "Deleting files: " $dirdestination
+
+                                $dirremove = -join($dirdestination, "\*.rar")
+                
+                                Remove-Item $dirremove
+
+                            }
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+    Sleep 10
+
+    }
+
+}
+
+if(-Not (Test-Path .\parameters.xml -PathType Leaf)) {
 
     setup
 
 }else {
 
-    $settings = Import-Clixml -Path .\params.xml
+    $settings = Import-Clixml -Path .\parameters.xml
 
     $env:Path += $settings.path_to_aria2c
 
@@ -71,6 +127,8 @@ if(-Not (Test-Path .\params.xml -PathType Leaf)) {
         aria2c --disable-ipv6=true --enable-rpc --rpc-allow-origin-all --rpc-listen-all --rpc-listen-port=6800 --rpc-secret=premiumizer --max-connection-per-server=16 --file-allocation=none --disk-cache=0 --max-concurrent-downloads=1 --continue=true
     
     }
+
+    Start-Job -Name UnRar -ScriptBlock $unrar -ArgumentList $settings
 
     Start-Job -Name TraktScraper -ScriptBlock $traktscraper -ArgumentList $settings, $pwd
 
