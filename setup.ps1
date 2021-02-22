@@ -87,7 +87,7 @@ function setup {
 
         $path_to_aria2c = Read-Host -Prompt 'Please enter the path in the format C:\path\to\'
 
-        if((Test-Path $path_to_aria2c -PathType Leaf)){
+        if((Test-Path (-join($path_to_aria2c,"aria2c.exe")) -PathType Leaf)){
             clear
             Write-Host "Successfully connected to Aria2c!"
         }else{
@@ -107,7 +107,7 @@ function setup {
 
         $path_to_winrar = Read-Host -Prompt 'Please enter the path in the format C:\path\to\'
 
-        if((Test-Path $path_to_winrar -PathType Leaf)){
+        if((Test-Path (-join($path_to_winrar,"unrar.exe")) -PathType Leaf)){
             clear
             Write-Host "Successfully connected to WinRar!"
         }else{
