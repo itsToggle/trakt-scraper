@@ -58,6 +58,12 @@ WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
 
+Log:
+
+![alt text](https://i.ibb.co/7Cn0KXn/Screenshot-20210223-090840-Chrome.jpg)
+![alt text](https://i.ibb.co/r3zQH8D/Screenshot-20210223-090519-Chrome.jpg)
+
+
 Known Bugs:
 
         - The Script crashes if you select text in the consol window. No idea why that is...
