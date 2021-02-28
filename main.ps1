@@ -61,7 +61,9 @@ $unrar = {
     
     while(1){
         
-        Write-Output "Running..."
+        Write-Output ";;;;;"
+
+        Write-Output "(unrar) checking for downloaded archives"
 
         $stopped = Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.tellStopped`",`"params`":[`"token:premiumizer`",-1,50]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
 
@@ -77,25 +79,31 @@ $unrar = {
 
                     $dirdestination = $download.dir
 
-                    if(Test-Path $dirfile -PathType Leaf){
+                    if(Test-Path -LiteralPath $dirfile -PathType Leaf){
+                        
+                        $text = -join("(unrar) testing archive: ", $dirfile)
 
-                        Write-Output "Testing File: " $dirfile
+                        Write-Output $text
                              
                         $log = [string](&$path_to_winrar t $dirfile)
 
                         if($log.Contains("All OK")){
+                            
+                            $text = -join("(unrar) extracting archive: ", $dirfile)
 
-                            Write-Output "Unrar: " $dirfile
+                            Write-Output $text
                 
                             $log = [string](&$path_to_winrar x -y -o- $dirfile $dirdestination)
 
                             if($log.Contains("All OK")){
+
+                                $text = -join("(unrar) deleting archives in: ", $dirdestination)
                                 
-                                Write-Output "Deleting files: " $dirdestination
+                                Write-Output $text
 
                                 $dirremove = -join($dirdestination, "\*.rar")
                 
-                                Remove-Item $dirremove
+                                Remove-Item -LiteralPath $dirremove
 
                             }
                         }
@@ -106,7 +114,7 @@ $unrar = {
             }
         }
 
-    Sleep 10
+    Sleep 30
 
     }
 
@@ -145,6 +153,18 @@ if(-Not (Test-Path .\parameters.xml -PathType Leaf)) {
         if ($context.Request.HttpMethod -eq 'GET') {
             
             WebUI
+
+            #unrarlog
+
+            $unrarjob = Get-Job -Name UnRar
+
+            $unrarjob_output = $unrarjob.ChildJobs.Output | Out-String
+
+            $unrarjob_output = $unrarjob_output -split(";;;;;")
+
+            $unrarjob_output[-1]
+
+            Write-Host
 
             [string]$html = tohtml -Raw -Encoding utf8 #Get-Content -Path .\out.html                              
 

@@ -15,7 +15,7 @@ function download($trakt, $settings) {
 
 # Test-Objects
 #$trakt = new-object system.collections.arraylist
-#$trakt += new-object psobject -property @{status=1;download_type="episode";query="MeatEater.S09E06";scraper=$null;cached=$null;hashed=$null;type="tv";next_season=9;next_episode=6;year="2007";title="MeatEater"}
+#$trakt += new-object psobject -property @{status=1;download_type="episode";query="WandaVision.S01E07";scraper=$null;cached=$null;hashed=$null;type="tv";next_season=1;next_episode=7;year="2021";title="WandaVision"}
 
     Foreach ($object in $trakt) {
                 
@@ -170,6 +170,10 @@ function download($trakt, $settings) {
 
                             debrid_direct $object
 
+                            $text = -join("(traktscraper) Trakt sucessfully synced for item: ",$object.title)
+
+                            Write-Output $text
+
                             $traktcollected = sync $object $settings
 
                         }
@@ -194,7 +198,7 @@ function debrid_cached($object, $settings) {
 
                 . .\sync.ps1
 
-                Write-Output "checking debrid for cached torrents..."
+                Write-Output "(traktscraper) checking debrid for cached torrents..."
 
                 $object | Add-Member -type NoteProperty -name service -Value $null -Force
             
@@ -225,16 +229,32 @@ function debrid_cached($object, $settings) {
                         $check_cache_RD = Invoke-WebRequest @Post_Hash -WebSession $realdebridsession
 
                         $fuck = $check_cache_RD.content | ConvertFrom-Json
-
-                        $fuck = $fuck.$hashstring.rd | Get-Member -MemberType Properties | Select-Object Name
                         
-                        $cachedid = $fuck.Name
+                        #foreach($torrent in $fuck.$hashstring.rd){
+                        #    $fuckid = $torrent | Get-Member -MemberType Properties | Select-Object Name
+                        #    $fuckid = $fuckid.Name
+                        #    foreach($id in $torrent.$fuckid){
+                        #        $id.filename
+                        #    }
+                        #    Write-Output "next"
+                        #}
+                        
+                        $cachedid = @()
+
+                        foreach($entry in $fuck.$hashstring.rd){
+                            if($entry -ne $null){
+                                $entryobject = $entry | Get-Member -MemberType Properties | Select-Object Name
+                                $cachedid += $entryobject.Name 
+                            }
+                        }
+
+                        $cachedid = $cachedid | Sort -Unique  
 
                         $check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession                 
 
                         if($check_cache_PM.response){
                             
-                            Write-Output "Premiumize cache found"
+                            Write-Output "(traktscraper) Premiumize cache found"
                     
                             $object.service = "PM"
 							
@@ -256,15 +276,15 @@ function debrid_cached($object, $settings) {
 
                             $traktcollected = sync $object $settings
 
-                            Write-Output "Trakt sucessfully synced for item:"
+                            $text = -join("(traktscraper) Trakt sucessfully synced for item: ",$object.title)
 
-                            $object
+                            Write-Output $text
 
                             break
 
                         }elseif([int]$check_cache_RD.RawContentLength -gt [int]"60") {
 
-                            Write-Output "RealDebrid cache found"
+                            Write-Output "(traktscraper) RealDebrid cache found"
 
                             $object.service = "RD"
  
@@ -274,9 +294,9 @@ function debrid_cached($object, $settings) {
 
                             $object.hashed = $hashes
 
-                            Write-Output "Trakt sucessfully synced for item:"
+                            $text = -join("(traktscraper) Trakt sucessfully synced for item: ",$object.title)
 
-                            $object
+                            Write-Output $text
 
                             $traktcollected = sync $object $settings
 
@@ -359,7 +379,7 @@ function debrid_monitor($trakt, $settings) {
 
             . .\sync.ps1
 
-            Write-Output "checking debrid for finished torrents"
+            Write-Output "(traktscraper) checking debrid for finished torrents"
 
             $Header = @{
                 "authorization" = "Bearer $real_debrid_token"
@@ -446,7 +466,7 @@ function debrid_monitor($trakt, $settings) {
 
 function debrid_direct($object, $settings) {
             
-            Write-Output "checking debrid for finished direct links"
+            Write-Output "(traktscraper) checking debrid for finished direct links"
 
             $type = $object.type
             $name = $object.scraper[0].title
@@ -473,6 +493,6 @@ function debrid_direct($object, $settings) {
             }
 }
 
-#$settings = Import-Clixml -Path .\params.xml
+#$settings = Import-Clixml -Path .\parameters.xml
 
 #download $trakt $settings

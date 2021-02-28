@@ -182,11 +182,11 @@ function torrent($object, $settings){
      
      $scraper = new-object system.collections.arraylist 
 
-     Write-Output "scraping torrents: " $object.query
+     $text = -join("(traktscraper) scraping torrents: ", $object.query)
+
+     Write-Output $text
 
      $items = scrape_magnets $object
-
-     $items  | Format-Table
 
      $query = $object.query
 
@@ -266,9 +266,11 @@ function torrent($object, $settings){
 
                 $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
 
-            }elseif($files.season.Contains($object.next_season) -and $files.episode.Contains($object.next_episode)){
+            }elseif(@($files.season).Contains($object.next_season) -and @($files.episode).Contains($object.next_episode)){
                 
-                Write-Output "result contains next episode: " $item.title
+                $text = -join("(traktscraper) result contains next episode: ", $item.title)
+
+                Write-Output $text
 
                 $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
                                 
@@ -279,7 +281,11 @@ function torrent($object, $settings){
 
     }
 
-    $object.scraper += @( $scraper | Sort-Object -Property quality,seeders -Descending )
+    $scraper = $scraper | Sort-Object -Property quality,seeders -Descending
+
+    $object.scraper += @( $scraper )
+
+    $object.scraper | Format-Table
 
     $object.status = 2
 
@@ -291,11 +297,11 @@ function hoster($object) {
      
      $scraper = new-object system.collections.arraylist 
 
-     Write-Output "scraping hosters: " $object.query
+     $text = -join("(traktscraper) scraping hosters: ",$object.query)
+
+     Write-Output $text
 
      $items = scrape_hosters $object
-
-     $items  | Format-Table
 
      $query = $object.query
 
@@ -327,9 +333,11 @@ function hoster($object) {
 
                 $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;hoster=$download;files=$files}
 
-            }elseif($files.season.Contains($object.next_season) -and $files.episode.Contains($object.next_episode)){
+            }elseif(@($files.season).Contains($object.next_season) -and @($files.episode).Contains($object.next_episode)){
                 
-                Write-Output "result contains next episode :" $item.title
+                $text = -join("(traktscraper) result contains next episode: ", $item.title)
+
+                Write-Output $text
 
                 $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;hoster=$download;files=$files}
 
@@ -342,7 +350,11 @@ function hoster($object) {
 
     }
 
-    $object.scraper += @( $scraper | Sort-Object -Property quality -Descending )
+    $scraper = $scraper | Sort-Object -Property quality -Descending
+
+    $object.scraper += @( $scraper )
+
+    $object.scraper | Format-Table
 
     $object.status = 2
 
