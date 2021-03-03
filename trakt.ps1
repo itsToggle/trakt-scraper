@@ -4,7 +4,8 @@
 #
 
 function trakt($settings) {
-
+    
+    $exceptions = Import-Clixml -Path .\exceptions.xml
 
     $trakt_client_id = $settings.trakt_client_id
     $trakt_client_secret = $settings.trakt_client_secret
@@ -79,9 +80,7 @@ function trakt($settings) {
 
                 $show_id = $show.ids.trakt
 
-                $entry = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/progress/collection?hidden=false&specials=false&count_specials=true" -Method Get -Headers $Header -WebSession $traktsession
-        
-                
+                $entry = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/progress/collection?hidden=false&specials=false&count_specials=true" -Method Get -Headers $Header -WebSession $traktsession           
         
                 $show.next_episode = $entry.next_episode.number            
         
@@ -126,17 +125,11 @@ function trakt($settings) {
 
                 if ($show.next_episode -ne $null) {
 
-                    $entry0 = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons?extended=full" -Method Get -Headers $Header -WebSession $traktsession
-            
-                    
+                    $entry0 = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons?extended=full" -Method Get -Headers $Header -WebSession $traktsession                
                     
                     $seasonnumbers = $entry0.number
 
-                    if($seasonnumbers.GetType().Name -eq "Int32"){
-
-                        $entrynumber = $show_next_season-1
-
-                    }elseif(-Not $entry0.number.Contains(0)){
+                    if(-Not @($entry0.number).Contains(0)){
                 
                         $entrynumber = $show_next_season-1
             
@@ -147,74 +140,67 @@ function trakt($settings) {
                     }
 
                     $show.next_season_id = $entry0.ids[$entrynumber]
-
-                    if($entry0.episode_count[$entrynumber] -ne $entry0.aired_episodes[$entrynumber]) {
                 
-                        $entry = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons/$show_next_season/episodes/$show_next_episode ?extended=full" -Method Get -Headers $Header -WebSession $traktsession
-               
-                        
+                    $entry1 = Invoke-RestMethod -Uri "https://api.trakt.tv/shows/$show_id/seasons/$show_next_season/episodes/$show_next_episode ?extended=full" -Method Get -Headers $Header -WebSession $traktsession            
                 
-                        $first_aired_long = $entry.first_aired
+                    $first_aired_long = $entry1.first_aired
 
-                        $delay = New-TimeSpan -Hours 1
+                    $delay = New-TimeSpan -Hours 1
 
-                        if((get-date $now) -lt (get-date $first_aired_long)+$delay) {
+                    if((get-date $now) -lt (get-date $first_aired_long)+$delay) {
                     
-                            $show.download_type = $null
+                        $show.download_type = $null
 
-                            $start = (get-date $first_aired_long)+$delay
+                        $start = (get-date $first_aired_long)+$delay
 
-                            $till_release = New-TimeSpan -Start (get-date $now) -End $start
+                        $till_release = New-TimeSpan -Start (get-date $now) -End $start
 
-                            $show.release_wait = "{0:dd}d:{0:hh}h:{0:mm}m" -f $till_release                                
-                
-                        } else {
-                    
-                            $season = "{0:d2}" -f $show_next_season
-
-                            $episode = "{0:d2}" -f $show_next_episode
-
-                            $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-
-                            $show.download_type = "episode"
-                    
-                            $show.query = -join($title,".S",$season,"E",$episode)                
-                    
-                        }
-
-                    } elseif($show.next_episode -eq "1") {
-                
-                        $season = "{0:d2}" -f $show_next_season
-
-                        $title = $show.title-replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-
-                        $show.download_type = "season"
-                
-                        $show.query = -join($title,".S",$season)
+                        $show.release_wait = "{0:dd}d:{0:hh}h:{0:mm}m" -f $till_release                                
                 
                     } else {
-                       
+                    
                         $season = "{0:d2}" -f $show_next_season
 
-                        $episode = "{0:d2}" -f $show_next_episode
+                        $episode = "{0:d2}" -f $show_next_episode  
 
-                        $title = $show.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
+                        $title = $show.title  -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
 
-                        $show.download_type = "episode"
+                        $year = $show.year
+
+                        $release_year = (get-date $first_aired_long -Year)
+
+                        $release_month = "{0:d2}" -f (get-date $first_aired_long -Month)
+
+                        $release_day = "{0:d2}" -f (get-date $first_aired_long -Day)
+
+                        $season_title = $entry0.title[$entrynumber] -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
+
+                        $show.download_type = "show"
+
+                        $show.query += @(-join($title,".S",$season))
+                            
+                        $show.query += @(-join($title,".",$year,".S",$season))
                     
-                        $show.query = -join($title,".S",$season,"E",$episode)
-                                              
-                    }
+                        $show.query += @(-join($title,".S",$season,"E",$episode)) 
+                            
+                        $show.query += @(-join($title,".",$year,".S",$season,"E",$episode))
+                        
+                        if($exceptions.($show.title) -ne $null) {
+                            
+                            iex $exceptions.($show.title)
+
+                        }
+
+                    }                
 
                 }
+
             }    
 
     # get_collection_movies
 
             $get_collection_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection/movies" -Method Get -Headers $Header -WebSession $traktsession
-    
-            
-   
+       
             Foreach ($entry in $get_collection_response) {
         
                 $trakt += $entry.movie
@@ -231,7 +217,7 @@ function trakt($settings) {
                
                 if(-Not $trakt.title.Contains($entry.movie.title)) {
 
-                    $title = $entry.movie.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
+                    $title = $entry.movie.title -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
 
                     $query = -join($title,".",$entry.movie.year) 
 
@@ -263,6 +249,6 @@ function trakt($settings) {
 
 }
 
-#$settings = Import-Clixml -Path .\params.xml
+#$settings = Import-Clixml -Path .\parameters.xml
 
-#$trakt = trakt $settings
+#trakt $settings

@@ -15,82 +15,15 @@ function download($trakt, $settings) {
 
 # Test-Objects
 #$trakt = new-object system.collections.arraylist
-#$trakt += new-object psobject -property @{status=1;download_type="episode";query="WandaVision.S01E07";scraper=$null;cached=$null;hashed=$null;type="tv";next_season=1;next_episode=7;year="2021";title="WandaVision"}
+#$trakt += new-object psobject -property @{status=1;download_type="show";query=@("MeatEater.S09");scraper=$null;cached=$null;hashed=$null;type="tv";next_season=9;next_episode=7;year="2021";title="MeatEater"}
 
     Foreach ($object in $trakt) {
-                
-                $traktcollected = $false
 
                 $object | Add-Member -type NoteProperty -name files -Value $null -Force
 
-                if ($object.query -ne $null -and $object.status -le 1) { 
+                if ($object.query -ne $null) { 
 
-                    [int]$retries = 0
-
-                    $originalquery = $object.query
-
-                    $originaltype = $object.download_type
-            
-                    do { 
-                
-                        $retries++
-
-                        $query = $object.query
-                        
-                        $query_fallback = $object.query
-
-
-                        if($object.download_type -eq "episode" -and $retries -eq 2) {
-                            
-                            $retries = 1
-                            
-                            $object.download_type = "season"
-                             
-                            $season = "{0:d2}" -f $object.next_season
-
-                            $year = $object.year
-
-                            $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-
-                            $object.query = -join($title,".S",$season)
-
-                        }
-
-                        if($object.download_type -eq "episode") {
-                            
-                            $season = "{0:d2}" -f $object.next_season
-
-                            $episode = "{0:d2}" -f $object.next_episode
-
-                            $year = $object.year
-
-                            $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-                    
-                            $query_fallback = -join($title,".",$year,".S",$season,"E",$episode)                  
-                            
-                        
-                        }elseif($object.download_type -eq "season") {
-                            
-                            $season = "{0:d2}" -f $object.next_season
-
-                            $year = $object.year
-
-                            $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-                    
-                            $query_fallback = -join($title,".",$year,".S",$season)                  
-                            
-                        }
-
-                        if($retries -eq 2){
-                            $object.query = $query_fallback
-                            #$query_fallback
-                        }
-
-                        #scrape for torrents
-
-                        torrent $object $settings
-
-                    } while ($object.scraper.hashes -eq $null -and $retries -lt 2)
+                    torrent $object $settings
 
                     #check debrid services for scraped magnets. If magnet is cached, direct download. Premiumize prefered for cached downloads.
 
@@ -99,72 +32,10 @@ function download($trakt, $settings) {
                     if($object.scraper.hashes -eq $null){
                         
                         $files = @()
-                        
-                        $object.query = $originalquery
-
-                        $object.download_type = $originaltype
 
                         $object.scraper | Add-Member -type NoteProperty -name hoster -Value $null  -Force
 
-                        [int]$retries = 0
-            
-                        do { 
-                            
-                            $retries++
-
-                            $query = $object.query
-                        
-                            $query_fallback = $object.query
-
-
-                            if($object.download_type -eq "episode" -and $retries -eq 2) {
-                            
-                                $retries = 1
-                            
-                                $object.download_type = "season"
-                             
-                                $season = "{0:d2}" -f $object.next_season
-
-                                $year = $object.year
-
-                                $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-
-                                $object.query = -join($title,".S",$season)
-
-                            }
-
-                            if($object.download_type -eq "episode") {
-                            
-                                $season = "{0:d2}" -f $object.next_season
-
-                                $episode = "{0:d2}" -f $object.next_episode
-
-                                $year = $object.year
-
-                                $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-                    
-                                $query_fallback = -join($title,".",$year,".S",$season,"E",$episode)                  
-                                
-                        
-                            }elseif($object.download_type -eq "season") {
-                            
-                                $season = "{0:d2}" -f $object.next_season
-
-                                $year = $object.year
-
-                                $title = $object.title -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','')
-                    
-                                $query_fallback = -join($title,".",$year,".S",$season)                  
-                            
-                            }
-
-                            if($retries -eq 2){
-                                $object.query = $query_fallback
-                            }
-
-                            hoster $object
-
-                        } while ($object.scraper.hoster -eq $null -and $retries -lt 2)
+                        hoster $object
 
                         if($object.scraper.hoster -ne $null){
 
@@ -174,7 +45,7 @@ function download($trakt, $settings) {
 
                             Write-Output $text
 
-                            $traktcollected = sync $object $settings
+                            sync $object $settings
 
                         }
 
@@ -230,15 +101,6 @@ function debrid_cached($object, $settings) {
 
                         $fuck = $check_cache_RD.content | ConvertFrom-Json
                         
-                        #foreach($torrent in $fuck.$hashstring.rd){
-                        #    $fuckid = $torrent | Get-Member -MemberType Properties | Select-Object Name
-                        #    $fuckid = $fuckid.Name
-                        #    foreach($id in $torrent.$fuckid){
-                        #        $id.filename
-                        #    }
-                        #    Write-Output "next"
-                        #}
-                        
                         $cachedid = @()
 
                         foreach($entry in $fuck.$hashstring.rd){
@@ -274,11 +136,11 @@ function debrid_cached($object, $settings) {
 
                             }
 
-                            $traktcollected = sync $object $settings
-
                             $text = -join("(traktscraper) Trakt sucessfully synced for item: ",$object.title)
 
                             Write-Output $text
+
+                            sync $object $settings
 
                             break
 
@@ -298,7 +160,7 @@ function debrid_cached($object, $settings) {
 
                             Write-Output $text
 
-                            $traktcollected = sync $object $settings
+                            sync $object $settings
 
                             break
 

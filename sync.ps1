@@ -53,7 +53,7 @@ function sync($object, $settings) {
 
     $nonnullids = $object_ | Select-Object $nonNullProps
 
-    if($object.download_type.Contains("season")) {
+    if($object.download_type.Contains("show")) {
          
         foreach($enumber in $object.files.episode){
 
@@ -72,24 +72,6 @@ function sync($object, $settings) {
         $object | Add-Member -type NoteProperty -name seasons -Value $seasons_ -Force
                
         $shows_ += $object | Select title, year, ids, seasons
-
-    }elseif ($object.download_type.Contains("episode")){
-
-        $enumber = $object.next_episode
-
-        $e = @{"number"=$enumber}
-
-        $episodes += $e
-
-        $snumber = $object.next_season
-
-        $s = @{"number"=$snumber;"episodes"=$episodes}
-
-        $seasons_ += $s
-               
-        $object | Add-Member -type NoteProperty -name seasons -Value $seasons_ -Force
-               
-        $shows_ += $object | Select title, year, ids, seasons   
 
     }
         
@@ -134,6 +116,6 @@ function sync($object, $settings) {
             
     $object.status = 1
 
-    Write-Output $true
+    Write-Output $post_collection_add | ConvertFrom-Json
 
 }
