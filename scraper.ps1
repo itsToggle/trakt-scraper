@@ -3,7 +3,6 @@
 # the scraper functions recieve a query. e.g. "The.Hobbit.2004" or "Breaking.Bad.S01E01"
 #
 
-
 function scrape_magnets($query) {
     
     # the scrape_torrents function must return an object with the following properties:
