@@ -53,7 +53,16 @@ Getting started:
             - The command in this case is: netsh http add urlacl url=http://+:8008/ user=YOUR-USERNAME-HERE
             - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
     
-    
+
+Exceptions:
+
+    The Script now allows for exceptions to be made to the search queries of shows. The 'exceptions.xml' contains a few examples on how to use this feature.
+    Take for example "The Tonight Show starring Jimmy Fallon". This show is released in the format "Jimmy.Fallon.Year.Month.Day".
+    To allow the scrapers to find the show in this format, an executable string is provided in the 'exceptions.xml' under the shows name.
+    The executable string is the following: $show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))
+    If a trakt show matches one of the titles in the exceptions.xml, the query is overwritten.
+
+
 WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
@@ -72,8 +81,6 @@ Known Bugs:
 
 Future To-Do's
         
-        - With the capability of file lists for both torrents and hosters there is no need to distinguish between season and episode download mode.
-        - Add the option to choose a different season/episode format. Shows that are released as: title.day (like talkshows) arent yet discovered.
         - More filehoster scrapers. HDEncode.com is pretty much the best, but there are some forums that have more releases. These could be accessable if a username and password are provided by the user.
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
         - I cant get the Console to update indepently from the WebUI.
