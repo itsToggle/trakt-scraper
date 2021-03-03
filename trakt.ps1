@@ -3,6 +3,7 @@
 # Creates a table of collected and queued content
 #
 
+
 function trakt($settings) {
     
     $exceptions = Import-Clixml -Path .\exceptions.xml
