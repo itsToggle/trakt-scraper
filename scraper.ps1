@@ -3,6 +3,7 @@
 # the scraper functions recieve a query. e.g. "The.Hobbit.2004" or "Breaking.Bad.S01E01"
 #
 
+
 function scrape_magnets($query) {
     
     # the scrape_torrents function must return an object with the following properties:
@@ -166,7 +167,7 @@ function scrape_hosters($query) {
         #...
 }
 
-function torrent($object, $settings){
+function torrent($object, $settings, $exceptions){
      
      $scraper = new-object system.collections.arraylist 
 
@@ -250,7 +251,13 @@ function torrent($object, $settings){
                                 
                 }
 
-                if($object.download_type -eq "movie") {
+                if(($object.download_type -eq "movie") -or ($exceptions.($object.title) -ne $null)) {
+
+                    if($exceptions.($object.title) -ne $null) {
+                        if($exceptions.($object.title).format -eq "date"){
+                            $files = new-object psobject -property @{season=$object.next_season;episode=$object.next_episode}
+                        }
+                    }
 
                     $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
 
@@ -287,7 +294,7 @@ function torrent($object, $settings){
 
 }
 
-function hoster($object) {
+function hoster($object, $exceptions) {
      
      $scraper = new-object system.collections.arraylist 
      
@@ -323,7 +330,13 @@ function hoster($object) {
                                 
                 }
 
-                if($object.download_type -eq "movie") {
+                if(($object.download_type -eq "movie") -or ($exceptions.($object.title) -ne $null)) {
+                    
+                    if($exceptions.($object.title) -ne $null) {
+                        if($exceptions.($object.title).format -eq "date"){
+                            $files = new-object psobject -property @{season=$object.next_season;episode=$object.next_episode}
+                        }
+                    }
 
                     $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;hoster=$download;files=$files}
 

@@ -1,7 +1,4 @@
-﻿#main script
- #
- 
- . .\setup.ps1
+﻿. .\setup.ps1
 
 . .\tohtml.ps1
 
@@ -12,6 +9,8 @@
 $traktscraper = {
 
     $settings = $args[0]
+
+    $exceptions = $args[2]
 
     $trakt_client_id = $settings.trakt_client_id
     $trakt_client_secret = $settings.trakt_client_secret
@@ -30,7 +29,7 @@ $traktscraper = {
 
         while(1) {
     
-            $trakt = trakt $settings
+            $trakt = trakt $settings $exceptions
 
             Clear-Host
 
@@ -50,7 +49,7 @@ $traktscraper = {
 
             }
         
-            download $trakt $settings
+            download $trakt $settings $exceptions
 
         }
             
@@ -70,17 +69,27 @@ if(-Not (Test-Path .\parameters.xml -PathType Leaf)) {
 
         $exceptions = @{
             
-            'The Tonight Show Starring Jimmy Fallon' = '$show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))'
-
-            'Jimmy Kimmel Live' = '$show.query = @(-join("Jimmy.Kimmel",".",$release_year,".",$release_month,".",$release_day))'
+            'The Tonight Show Starring Jimmy Fallon' = @{
+                command = '$show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))'
+                format = 'date'
+            }
+            'Jimmy Kimmel Live' = @{
+                command = '$show.query = @(-join("Jimmy.Kimmel",".",$release_year,".",$release_month,".",$release_day))'
+                format = 'date'
+            }
             
-            'Cosmos' = '$show.query = @(-join("Cosmos",".",$season_title))'
+            'Cosmos' = @{
+                command = '$show.query = @(-join("Cosmos",".",$season_title))'
+                format = 'episode'
+            }
 
         }
         
         $exceptions | Export-Clixml -Path .\exceptions.xml
     
     }
+
+    $exceptions = Import-Clixml -Path .\exceptions.xml
 
     $settings = Import-Clixml -Path .\parameters.xml
 
@@ -94,7 +103,7 @@ if(-Not (Test-Path .\parameters.xml -PathType Leaf)) {
 
     Start-Job -Name UnRar -ScriptBlock $unrar -ArgumentList $settings
 
-    Start-Job -Name TraktScraper -ScriptBlock $traktscraper -ArgumentList $settings, $pwd
+    Start-Job -Name TraktScraper -ScriptBlock $traktscraper -ArgumentList $settings, $pwd, $exceptions
 
     $http = [System.Net.HttpListener]::new()
 

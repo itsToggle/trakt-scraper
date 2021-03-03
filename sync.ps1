@@ -1,7 +1,6 @@
 ﻿# Trakt Sync Script
 #
 # Collects content and clears the watchlist
-#
 
 function sync($object, $settings) {
 

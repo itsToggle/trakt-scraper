@@ -1,7 +1,6 @@
 ﻿# Torrent Download Script
-#
 
-function download($trakt, $settings) {
+function download($trakt, $settings, $exceptions) {
     
     . .\scraper.ps1
 
@@ -24,7 +23,7 @@ function download($trakt, $settings) {
 
                 if ($object.query -ne $null) { 
 
-                    torrent $object $settings
+                    torrent $object $settings $exceptions
 
                     #check debrid services for scraped magnets. If magnet is cached, direct download. Premiumize prefered for cached downloads.
 
@@ -36,7 +35,7 @@ function download($trakt, $settings) {
 
                         $object.scraper | Add-Member -type NoteProperty -name hoster -Value $null  -Force
 
-                        hoster $object
+                        hoster $object $exceptions
 
                         if($object.scraper.hoster -ne $null){
 

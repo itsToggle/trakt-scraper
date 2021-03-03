@@ -1,6 +1,4 @@
-﻿#unrar skript
- 
- $unrar = {   
+﻿$unrar = {   
     
     $path_to_winrar = -join($args[0].path_to_winrar, "unrar.exe")
     

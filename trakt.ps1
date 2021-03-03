@@ -3,10 +3,7 @@
 # Creates a table of collected and queued content
 #
 
-
-function trakt($settings) {
-    
-    $exceptions = Import-Clixml -Path .\exceptions.xml
+function trakt($settings, $exceptions) {
 
     $trakt_client_id = $settings.trakt_client_id
     $trakt_client_secret = $settings.trakt_client_secret
@@ -168,11 +165,11 @@ function trakt($settings) {
 
                         $year = $show.year
 
-                        $release_year = (get-date $first_aired_long -Year)
+                        $release_year = (get-date $first_aired_long -Format "yyyy")
 
-                        $release_month = "{0:d2}" -f (get-date $first_aired_long -Month)
+                        $release_month = "{0:d2}" -f (get-date $first_aired_long -Format "MM")
 
-                        $release_day = "{0:d2}" -f (get-date $first_aired_long -Day)
+                        $release_day = "{0:d2}" -f (get-date $first_aired_long -Format "dd")
 
                         $season_title = $entry0.title[$entrynumber] -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
 
@@ -188,7 +185,7 @@ function trakt($settings) {
                         
                         if($exceptions.($show.title) -ne $null) {
                             
-                            iex $exceptions.($show.title)
+                            iex $exceptions.($show.title).command
 
                         }
 
@@ -211,8 +208,6 @@ function trakt($settings) {
     # get_watchlist_movies
 
             $get_watchlist_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/watchlist/movies" -Method Get -Headers $Header -WebSession $traktsession
-   
-            
    
             Foreach ($entry in $get_watchlist_response) {
                
