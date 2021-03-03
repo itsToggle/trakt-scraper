@@ -64,10 +64,7 @@ Exceptions:
     The executable string is the following: $show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))
     
     If a trakt show matches one of the titles in the exceptions.xml, the query is overwritten.
-    
-    The only Problem I still encounter is that the date-formatted shows arent yet synced with trakt. I will work on that.
-
-
+   
 WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
