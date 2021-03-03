@@ -1,4 +1,7 @@
-﻿. .\setup.ps1
+﻿#main script
+ #
+ 
+ . .\setup.ps1
 
 . .\tohtml.ps1
 
