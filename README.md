@@ -59,7 +59,7 @@ Exceptions:
     The Script now allows for exceptions to be made to the search queries of shows. The 'exceptions.xml' contains a few examples on how to use this feature.
     Take for example "The Tonight Show starring Jimmy Fallon". This show is released in the format "Jimmy.Fallon.Year.Month.Day".
     To allow the scrapers to find the show in this format, an executable string is provided in the 'exceptions.xml' under the shows name.
-    The executable string is the following: $show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))
+    The executable string is the following format: $show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))
     If a trakt show matches one of the titles in the exceptions.xml, the query is overwritten.
 
 
