@@ -58,23 +58,35 @@ Exceptions:
 
     The Script now allows for exceptions to be made to the search queries of shows. 
     
+    The standard search queries are:
+    title.SXX
+    title.year.SXX
+    title.SXXEXX
+    title.year.SXXEXX
+    
+    If a show cannot be found with these queries, define an exception:
+    
     After the first proper run of the script, 'exceptions.xml' is created. This file contains a few examples on how to use this feature.
     
     Take for example "The Tonight Show starring Jimmy Fallon". This show is released in the format "Jimmy.Fallon.Year.Month.Day".
-    To allow the scrapers to find the show in this format, an executable string is provided in the 'exceptions.xml' under the shows name.
-    
-    The executable string is the following: $show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))
+    So neither the title nor the episode format matches the standard search queries.
+    To allow the scrapers to find the show in this format, an executable string is provided in the 'exceptions.xml' under the shows trakt name.
+    The executable string in this case is: $show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))
     
     If a trakt show matches one of the titles in the exceptions.xml, the query is overwritten.
     
     To add new exceptions, just add them directly into the xml or delete the exceptions.xml and add new exception in main.ps1. 
     
     The variables currently available are:
-    release year
-    release month
-    release day
-    season title
-   
+    
+    episode       -  show_next_episode 
+    season        -  show_next_season
+    season title  -  season_title
+    episode title -  episode_title
+    release year  -  release_year
+    release month -  release_month
+    release day   -  release_day
+    
 WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
