@@ -79,13 +79,13 @@ Exceptions:
     
     The variables currently available are:
     
-    episode       -  show_next_episode 
-    season        -  show_next_season
-    season title  -  season_title
-    episode title -  episode_title
-    release year  -  release_year
-    release month -  release_month
-    release day   -  release_day
+    episode       -  $show_next_episode 
+    season        -  $show_next_season
+    season title  -  $season_title
+    episode title -  $episode_title
+    release year  -  $release_year
+    release month -  $release_month
+    release day   -  $release_day
     
     Please do keep in mind that both the 'exceptions.txt' and the commands in it are executed. Beware of the commands you put in there.
     
