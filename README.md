@@ -66,14 +66,14 @@ Exceptions:
     
     If a show cannot be found with these queries, define an exception:
     
-    After the first proper run of the script, 'exceptions.xml' is created. This file contains a few examples on how to use this feature.
+    After the first proper run of the script, 'exceptions.txt' is created. This file contains a few examples on how to use this feature.
     
     Take for example "The Tonight Show starring Jimmy Fallon". This show is released in the format "Jimmy.Fallon.Year.Month.Day".
     So neither the title nor the episode format matches the standard search queries.
     To allow the scrapers to find the show in this format, an executable string is provided in the 'exceptions.xml' under the shows trakt name.
-    The executable string in this case is: $show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))
+    The executable string in this case is: $show.query = -join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day)
     
-    If a trakt show matches one of the titles in the exceptions.xml, the query is overwritten.
+    If a trakt show matches one of the titles in the exceptions.txt, the query is overwritten.
     
     To add new exceptions, just add them directly into the xml or delete the exceptions.xml and add new exception in main.ps1. 
     
@@ -105,7 +105,6 @@ Known Bugs:
 
 Future To-Do's
             
-        - Make exceptions.xml more readable
         - More filehoster scrapers. HDEncode.com is pretty much the best, but there are some forums that have more releases. These could be accessable if a username and password are provided by the user.
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
         - I cant get the Console to update indepently from the WebUI.
