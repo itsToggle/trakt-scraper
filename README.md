@@ -75,7 +75,7 @@ Exceptions:
     
     If a trakt show matches one of the titles in the exceptions.txt, the query is overwritten.
     
-    To add new exceptions, just add them directly into the xml or delete the exceptions.xml and add new exception in main.ps1. 
+    To add new exceptions, just add them directly to the exception.txt file. Stick with the format shown in the examples. 
     
     The variables currently available are:
     
