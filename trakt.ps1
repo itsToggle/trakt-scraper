@@ -173,6 +173,8 @@ function trakt($settings, $exceptions) {
 
                         $season_title = $entry0.title[$entrynumber] -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
 
+                        $episode_title = $entry1.title -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
+                        
                         $show.download_type = "show"
 
                         $show.query += @(-join($title,".S",$season))

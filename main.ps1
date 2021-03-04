@@ -65,31 +65,35 @@ if(-Not (Test-Path .\parameters.xml -PathType Leaf)) {
 
 }else {
     
-    if(-Not (Test-Path .\exceptions.xml -PathType Leaf)) {
+    if(-Not (Test-Path .\exceptions.txt -PathType Leaf)) {
 
-        $exceptions = @{
+        $exceptionstext = '$exceptions = @{
             
-            'The Tonight Show Starring Jimmy Fallon' = @{
-                command = '$show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))'
-                format = 'date'
-            }
-            'Jimmy Kimmel Live' = @{
-                command = '$show.query = @(-join("Jimmy.Kimmel",".",$release_year,".",$release_month,".",$release_day))'
-                format = 'date'
-            }
+    ''The Tonight Show Starring Jimmy Fallon'' = @{
+            command = ''$show.query = @(-join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day))'';
+            format = ''date''
+    };
+    
+    ''Jimmy Kimmel Live'' = @{
+            command = ''$show.query = @(-join("Jimmy.Kimmel",".",$release_year,".",$release_month,".",$release_day))'';
+            format = ''date''
+    };
             
-            'Cosmos' = @{
-                command = '$show.query = @(-join("Cosmos",".",$season_title))'
-                format = 'episode'
-            }
+    ''Cosmos'' = @{
+            command = ''$show.query = @(-join("Cosmos",".",$season_title))''
+    }
 
-        }
+}'
         
-        $exceptions | Export-Clixml -Path .\exceptions.xml
+        $exceptionstext | Out-File .\exceptions.txt
     
     }
 
-    $exceptions = Import-Clixml -Path .\exceptions.xml
+    [string]$exceptionstext = Get-Content -Path .\exceptions.txt
+
+    $exceptionstext = $exceptionstext.replace("`n","").replace("`r","")
+
+    iex $exceptionstext
 
     $settings = Import-Clixml -Path .\parameters.xml
 
