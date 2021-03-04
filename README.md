@@ -100,7 +100,8 @@ Log:
 
 
 Known Bugs:
-
+        
+        - If an upcoming episode was recently announced, trakt is a little slow with providing the release date. My current release wait merhod attempts to download it right away.
         - The Script crashes if you select text in the consol window. No idea why that is...
         - Special Characters. Ive tried to think of every Character that could pop up in a Movie/Show Title, but I could always miss one.
 
