@@ -38,8 +38,6 @@
                 
                             $log = [string](&$path_to_winrar x -y -o- $dirfile $dirdestination)
 
-                            $log
-
                             if($log.Contains("All OK")){
 
                                 $dirlogfiles = [regex]::matches($log, "(?<=Extracting from.*)(\\[^\\]*\.rar)(?= )", "IgnoreCase").value
