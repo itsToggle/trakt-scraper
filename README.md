@@ -12,15 +12,27 @@ What it does:
                - Your trakt collection is monitored for newly released content.
                - Your watchlist acts as a download queue for content you havent collected.
     
-    2. torrent scraping:
-               - If new content is found, a scraper for rarbg, 1337x and magnetdl searches for the best quality/best seeded torrent
-               - If a season of a tv show is fully released, season packs are prefered.
-               - Releases that contain partial seasons (e.g. title.S01.Part1) are now fully supported
+    2. queries for scraping:
+               - If new content is found, search queries for the scrapers are generated:
+               - for movies the query is:
+                    - title.year
+               - for shows, the following standard search queries are generated in the displayed order:
+                    - title.SXX             (season pack releases)
+                    - title.year.SXX        (season pack releases)    
+                    - title.SXXEXX          (epsiode releases)
+                    - title.year.SXXEXX     (episode releases)
+               - to allow for date-formatted releases (or any other release-format) exceptions can be made that overwrite the standart search queries.
+                 
+    3. scraping:
+               - torrents: for each search query, a scraper for rarbg, 1337x and magnetdl searches for the best quality/best seeded torrent
+               - filehosters: If no torrent is found, hdencode.com is scraped for each search query
+               
+               - The first seach queries are for season packs. If a season pack is found, its filelist is compiled.
+               - If the filelist contains the episode that is searched for and not the last episode that was collected, the release is accepted. 
+                 (This way partial season packs work as well as full season packs.)
+               - If no season pack is found, the scrapers search for episode releases.
     
-    2.5. Filehoster scraping:
-               - If no torrent is found, hdencode.com gets scraped for a matching filehoster upload
-    
-    3. debrid: 
+    4. debrid: 
                - Debrid Services (Real Debrid and Premiumize) are searched for a cached version of the scraped torrent
                - If a cached version is found, the direct download link gets send to Aria2c, a download manager
                - If no cached torrents are available, the best seeded torrent is added to a debrid service's download queue
@@ -28,9 +40,9 @@ What it does:
                - Once added to Aria2c the torrent is deleted from the Debrid Service.
                - finished Downloads are unrar'ed
                
-    4. trakt:
-               - Downloaded content is added to the trakt collection
-               - The watchlist is cleared.
+    5. trakt:
+               - Downloaded content is added to the trakt collection. Season packs are collected by episode. This way partial season packs work flawlessly.
+               - Downloaded content is removed from the watchlist.
 
     
 Getting started:
