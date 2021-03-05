@@ -27,7 +27,7 @@ What it does:
                - torrents: for each search query, a scraper for rarbg, 1337x and magnetdl searches for the best quality/best seeded torrent
                - filehosters: If no torrent is found, hdencode.com is scraped for each search query
                
-               - The first seach queries are for season packs. If a season pack is found, its filelist is compiled.
+               - The scrapers search for season packs first. If a season pack is found, its filelist is compiled.
                - If the filelist contains the episode that is searched for and not the last episode that was collected, the release is accepted. 
                  (This way partial season packs work as well as full season packs.)
                - If no season pack is found, the scrapers search for episode releases.
