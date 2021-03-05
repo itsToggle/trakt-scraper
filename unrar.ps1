@@ -38,26 +38,37 @@
                 
                             $log = [string](&$path_to_winrar x -y -o- $dirfile $dirdestination)
 
+                            $log
+
                             if($log.Contains("All OK")){
 
-                                $text = -join("(unrar) deleting archives in: ", $dirdestination)
-                                
-                                Write-Output $text
+                                $dirlogfiles = [regex]::matches($log, "(?<=Extracting from.*)(\\[^\\]*\.rar)(?= )", "IgnoreCase").value
 
-                                $dirremove = -join($dirdestination, "\*.rar")
+                                Foreach ($dirlogfile in $dirlogfiles){
+
+                                    $dirremove = -join($dirdestination, $dirlogfile)
+                                    
+                                    $text = -join("(unrar) deleting archive: ", $dirremove)
+                                
+                                    Write-Output $text
                 
-                                Remove-Item -LiteralPath $dirremove
+                                    Remove-Item -LiteralPath $dirremove
+
+                                }
 
                             }
+
                         }
+
                     }
 
                 }
 
             }
+
         }
 
-    Sleep 30
+        Sleep 30
 
     }
 

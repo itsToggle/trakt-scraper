@@ -261,7 +261,7 @@ function torrent($object, $settings, $exceptions){
 
                     $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
 
-                }elseif(@($files.season).Contains($object.next_season) -and @($files.episode).Contains($object.next_episode)){
+                }elseif((@($files.season).Contains($object.next_season) -and @($files.episode).Contains($object.next_episode)) -and -not (@($files.season).Contains($object.last_season) -and @($files.episode).Contains($object.last_episode) )){
                 
                     $text = -join("(traktscraper) result contains next episode: ", $item.title)
 
@@ -340,7 +340,7 @@ function hoster($object, $exceptions) {
 
                     $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;hoster=$download;files=$files}
 
-                }elseif(@($files.season).Contains($object.next_season) -and @($files.episode).Contains($object.next_episode)){
+                }elseif((@($files.season).Contains($object.next_season) -and @($files.episode).Contains($object.next_episode)) -and -not (@($files.season).Contains($object.last_season) -and @($files.episode).Contains($object.last_episode) )){
                 
                     $text = -join("(traktscraper) result contains next episode: ", $item.title)
 
