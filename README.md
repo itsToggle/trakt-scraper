@@ -84,6 +84,7 @@ Exceptions:
     So neither the title nor the episode format matches the standard search queries.
     To allow the scrapers to find the show in this format, an executable string is provided in the 'exceptions.txt' under the shows trakt name.
     The executable string in this case is: $show.query = -join("Jimmy.Fallon",".",$release_year,".",$release_month,".",$release_day)
+    Which translates to the following query (example): Jimmy.Fallon.2021.03.02
     
     If a trakt show matches one of the titles in the exceptions.txt, the query is overwritten.
     
@@ -91,13 +92,13 @@ Exceptions:
     
     The variables currently available are:
     
-    episode       -  $show_next_episode 
-    season        -  $show_next_season
-    season title  -  $season_title
-    episode title -  $episode_title
-    release year  -  $release_year
-    release month -  $release_month
-    release day   -  $release_day
+    episode         -  $show_next_episode - [2-digit int]
+    season          -  $show_next_season  - [2-digit int]
+    season title    -  $season_title      - [special chars removed, spaces replaced with dots]
+    episode title   -  $episode_title     - [special chars removed, spaces replaced with dots]
+    release year    -  $release_year      - [4-digit int]
+    release month   -  $release_month     - [2-digit int]
+    release day     -  $release_day       - [2-digit int]
     
     Please do keep in mind that both the 'exceptions.txt' and the commands in it are executed. Beware of the commands you put in there.
     
