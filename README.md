@@ -1,12 +1,16 @@
-# trakt-scraper
+# Trakt-Scraper
 
 A Powershell script to manage your media collection through trakt, with torrent and filehoster scraping and debrid support.
 
-This script is not going to be maintained. Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
+Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
 
+# Disclaimer:
+    
+    Im not responsible for what content you download, as this script only has the capacity to act as a middle man between different services.
+    The script itself does not provide the ability search for media content. The script itself does not provide the ability to download media content. 
+    It only connects different services. This project is ment as a fun way to explore the programming of API's.
 
-
-What it does:
+# What it does:
     
     1. trakt:
                - Your trakt collection is monitored for newly released content.
@@ -45,7 +49,7 @@ What it does:
                - Downloaded content is removed from the watchlist.
 
     
-Getting started:
+# Getting started:
 
     0. What You need: 
             - A Trakt.tv Account
@@ -66,7 +70,7 @@ Getting started:
             - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
     
 
-Exceptions:
+# Exceptions to Search-Queries:
 
     The Script now allows for exceptions to be made to the search queries of shows. 
     
@@ -102,24 +106,18 @@ Exceptions:
     
     Please do keep in mind that both the 'exceptions.txt' and the commands in it are executed. Beware of the commands you put in there.
     
-WebUi:
+# WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
 
-Log:
-
-![alt text](https://i.ibb.co/7Cn0KXn/Screenshot-20210223-090840-Chrome.jpg)
-![alt text](https://i.ibb.co/r3zQH8D/Screenshot-20210223-090519-Chrome.jpg)
-
-
-Known Bugs:
+# Known Bugs:
         
         - If an upcoming episode was recently announced, trakt is a little slow with providing the release date. My current release wait merhod attempts to download it right away.
         - The Script crashes if you select text in the consol window. No idea why that is...
         - Special Characters. Ive tried to think of every Character that could pop up in a Movie/Show Title, but I could always miss one.
 
 
-Future To-Do's
+# Future To-Do's
             
         - More filehoster scrapers. HDEncode.com is pretty much the best, but there are some forums that have more releases. These could be accessable if a username and password are provided by the user.
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
