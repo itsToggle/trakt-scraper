@@ -30,6 +30,13 @@ function scrape_magnets($query) {
 
     $1337x = $false
 
+    #
+    # begin output to log
+    #
+
+    Get-Date | Out-File scraper.log -Append
+
+    $query | Out-File scraper.log -Append
 
     #
     # Scrapers:
@@ -56,6 +63,8 @@ function scrape_magnets($query) {
 
         }while($apidown -and $retries -le 3)
 
+        #output to log
+        $rarbg | select title,seeders,download | Out-File scraper.log -Append
         #output the required properties
         $rarbg | select title,seeders,download
     }
@@ -78,7 +87,10 @@ function scrape_magnets($query) {
                 $magnetdl += $item
             }
         }
-        #Output the required properties
+        
+        #output to log
+        $magnetdl | select title,seeders,download | Out-File scraper.log -Append
+        #output the required properties
         $magnetdl | select title,seeders,download
     }
         
@@ -104,7 +116,9 @@ function scrape_magnets($query) {
                 $1337x += $item
             }
         }
-        #Output the required properties
+        #output to log
+        $1337x | select title,seeders,download | Out-File scraper.log -Append
+        #output the required properties
         $1337x | select title,seeders,download
     }
 
@@ -129,6 +143,17 @@ function scrape_hosters($query) {
     # This is because the Script extracts the hash from the magnet link and explicitly posts a magnet link to the debrid services. 
     # 
     
+    #
+    # begin output to log
+    #
+
+    Get-Date | Out-File scraper.log -Append
+
+    $query | Out-File scraper.log -Append
+
+    #
+    # Scrapers:
+    #
         
     #hdencode
         #build the uri
@@ -155,8 +180,10 @@ function scrape_hosters($query) {
             $hdencode += $item
             Sleep 1
         }
-        #Output the required properties
-        $hdencode
+        #output to log
+        $hdencode | select title,seeders,download | Out-File scraper.log -Append
+        #output the required properties
+        $hdencode | select title,seeders,download
    
     #other scraper
         #build the uri
@@ -174,6 +201,8 @@ function torrent($object, $settings, $exceptions){
      Foreach($query in $object.query) {
 
         $text = -join("(traktscraper) scraping torrents: ", $query)
+
+        $text | Out-File scraper.log -Append
 
         Write-Output $text
 
@@ -265,6 +294,8 @@ function torrent($object, $settings, $exceptions){
                 
                     $text = -join("(traktscraper) result contains next episode: ", $item.title)
 
+                    $text | Out-File scraper.log -Append
+
                     Write-Output $text
 
                     $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;category=$category;magnets=$download;seeders=[int]$seeders;imdb=$imdb;hashes=$hash;files=$files}
@@ -286,7 +317,9 @@ function torrent($object, $settings, $exceptions){
 
     $object.scraper += @( $scraper )
 
-    $object.scraper | Format-Table
+    $object.scraper | select title,seeders | Format-Table | Out-File scraper.log -Append
+
+    $object.scraper | select title,seeders | Format-Table
 
     $object.status = 2
 
@@ -301,6 +334,8 @@ function hoster($object, $exceptions) {
      Foreach($query in $object.query) {
 
         $text = -join("(traktscraper) scraping hosters: ",$query)
+
+        $text | Out-File scraper.log -Append
 
         Write-Output $text
      
@@ -344,6 +379,8 @@ function hoster($object, $exceptions) {
                 
                     $text = -join("(traktscraper) result contains next episode: ", $item.title)
 
+                    $text | Out-File scraper.log -Append
+
                     Write-Output $text
 
                     $scraper += new-object psobject -property @{title=$title;quality=[int]$quality;hoster=$download;files=$files}
@@ -367,7 +404,9 @@ function hoster($object, $exceptions) {
 
     $object.scraper += @( $scraper )
 
-    $object.scraper | Format-Table
+    $object.scraper | select title,files | Format-Table | Out-File scraper.log -Append
+
+    $object.scraper | select title,files | Format-Table
 
     $object.status = 2
 

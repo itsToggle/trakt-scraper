@@ -105,7 +105,7 @@ if(-Not (Test-Path .\parameters.xml -PathType Leaf)) {
     
     }
 
-    Start-Job -Name UnRar -ScriptBlock $unrar -ArgumentList $settings
+    Start-Job -Name UnRar -ScriptBlock $unrar -ArgumentList $settings, $pwd
 
     Start-Job -Name TraktScraper -ScriptBlock $traktscraper -ArgumentList $settings, $pwd, $exceptions
 
