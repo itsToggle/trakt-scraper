@@ -95,7 +95,7 @@ Exceptions:
     episode         -  $show_next_episode # e.g. 01, 13, etc
     season          -  $show_next_season  # e.g. 01, 13, etc
     season title    -  $season_title      # e.g. a.season.title, etc
-    episode title   -  $episode_title     # e.g. an.pisode.title, etc
+    episode title   -  $episode_title     # e.g. an.episode.title, etc
     release year    -  $release_year      # e.g. 2021, 1996, etc
     release month   -  $release_month     # e.g. 01, 10, etc
     release day     -  $release_day       # e.g. 01, 13, etc
