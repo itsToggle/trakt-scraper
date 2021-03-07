@@ -9,7 +9,7 @@ Im not a professional programmer. This script is only ment as a starting point f
 The script itself **does not** provide the ability search for media content. The script itself **does not** provide the ability to download media content. 
 It only connects different services. **This project is ment as a fun way to explore the programming of API's**.*
 
-## What it does:
+# What it does:
 1. **trakt:**
     - Your trakt collection is monitored for newly released content.
     - Your watchlist acts as a download queue for content you havent collected.
