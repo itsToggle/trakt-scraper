@@ -12,10 +12,6 @@
 
         $stopped = Invoke-WebRequest -Headers @{"Content-type"="application/json"} -Method Post -Body "{`"jsonrpc`":`"2.0`",`"id`":`"qwer`",`"method`":`"aria2.tellStopped`",`"params`":[`"token:premiumizer`",-1,50]}" http://192.168.0.23:6800/jsonrpc -SessionVariable aria2csession | ConvertFrom-Json
 
-        Get-Date | Out-File unrar.log -Append
-
-        $stopped.result.dir | Out-File unrar.log -Append
-
         $finished = $stopped.result
 
         if($finished -ne $null) {
@@ -29,6 +25,8 @@
                     $dirdestination = $download.dir
 
                     if(Test-Path -LiteralPath $dirfile -PathType Leaf){
+
+                        Get-Date | Out-File unrar.log -Append
                         
                         $text = -join("(unrar) testing archive: ", $dirfile)
 

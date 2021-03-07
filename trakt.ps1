@@ -3,6 +3,8 @@
 # Creates a table of collected and queued content
 #
 
+#$settings = Import-Clixml -Path .\parameters.xml
+
 function trakt($settings, $exceptions) {
 
     $trakt_client_id = $settings.trakt_client_id
@@ -24,14 +26,62 @@ function trakt($settings, $exceptions) {
             }
 
             $trakt = new-object system.collections.arraylist
+
+            $traktignored = new-object system.collections.arraylist
+
+    # get_ignored_shows
+            
+            $get_lists_response = Invoke-RestMethod -Uri "https://api.trakt.tv/users/me/lists" -Method Get -Headers $Header -SessionVariable traktsession            
+                
+            if(-Not @($get_lists_response.name).Contains("Ignored")){
+                
+                $post_ignored = @{
+                    name = "Ignored"
+                    description = "Shows that couldnt be found by scraper"
+                    privacy = "public"
+                }
+                
+                $post_ignored = ConvertTo-Json -Depth 10 -InputObject $post_ignored 
+
+                $post_ignored_response = Invoke-RestMethod -Uri "https://api.trakt.tv/users/me/lists" -Method Post -Headers $Header -Body $post_ignored  -SessionVariable traktsession
+
+            }
+            
+            $get_lists_response = Invoke-RestMethod -Uri "https://api.trakt.tv/users/me/lists" -Method Get -Headers $Header -SessionVariable traktsession
+
+            $ignored_list = $get_lists_response | Where-Object {$_.name -eq "Ignored"}
+
+            $ignored_list_id = $ignored_list.ids.slug
+            
+            $get_ignored_response = Invoke-RestMethod -Uri "https://api.trakt.tv/users/me/lists/$ignored_list_id/items/show" -Method Get -Headers $Header -SessionVariable traktsession                       
+
+            Foreach ($entry in $get_ignored_response) {
+                      
+                $traktignored += $entry.show
+
+            }
+
+            $get_ignored_response = Invoke-RestMethod -Uri "https://api.trakt.tv/users/me/lists/$ignored_list_id/items/movie" -Method Get -Headers $Header -SessionVariable traktsession                       
+
+            Foreach ($entry in $get_ignored_response) {
+                      
+                $traktignored += $entry.movie
+
+            }
+
+            
     
     # get_collection_shows
     
             $get_collection_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection/shows" -Method Get -Headers $Header -SessionVariable traktsession
 
-            Foreach ($entry in $get_collection_response) {
+            Foreach ($entry in $get_collection_response) { 
+                
+                if(-not @($traktignored.title).Contains($entry.show.title)){
                       
-                $trakt += $entry.show
+                    $trakt += $entry.show
+
+                }
 
             }
 
@@ -43,16 +93,19 @@ function trakt($settings, $exceptions) {
       
             Foreach ($entry in $get_watchlist_response) {
                
-            if(-Not $trakt.title.Contains($entry.show.title)) {
+                if(-Not @($trakt.title).Contains($entry.show.title) -and -not @($traktignored.title).Contains($entry.show.title)) { 
             
                     $trakt += $entry.show
 
                 }
+
             }
 
-            
 
+    
     # add special show stuff
+            
+            $traktignored_ = new-object system.collections.arraylist
 
             Foreach ($show in $trakt) {
         
@@ -99,7 +152,7 @@ function trakt($settings, $exceptions) {
                 }else{
                     $collected = $null
                 }
-                if($show.next_episode -ne $null -and $show.last_episode -ne $null){
+                if($show.next_episode -ne $null){
                     $next= -join("S",$nseason," E",$nepisode)                
                 }else{
                     $next = $null
@@ -161,7 +214,7 @@ function trakt($settings, $exceptions) {
 
                         $episode = "{0:d2}" -f $show_next_episode  
 
-                        $title = $show.title  -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
+                        $title = $show.title  -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
 
                         $year = $show.year
 
@@ -171,10 +224,10 @@ function trakt($settings, $exceptions) {
 
                         $release_day = "{0:d2}" -f (get-date $first_aired_long -Format "dd")
 
-                        $season_title = $entry0.title[$entrynumber] -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
+                        $season_title = $entry0.title[$entrynumber] -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
 
-                        $episode_title = $entry1.title -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
-                        
+                        $episode_title = $entry1.title -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
+
                         $show.download_type = "show"
 
                         $show.query += @(-join($title,".S",$season))
@@ -191,19 +244,25 @@ function trakt($settings, $exceptions) {
 
                         }
 
+                        $traktignored_ += new-object psobject -property @{$show.title = @($show.next)}
+
                     }                
 
                 }
 
-            }    
+            }
 
     # get_collection_movies
 
             $get_collection_response = Invoke-RestMethod -Uri "https://api.trakt.tv/sync/collection/movies" -Method Get -Headers $Header -WebSession $traktsession
        
             Foreach ($entry in $get_collection_response) {
-        
-                $trakt += $entry.movie
+                
+                if(-not @($traktignored.title).Contains($entry.movie.title)){
+
+                    $trakt += $entry.movie
+                
+                }
 
             }
 
@@ -213,9 +272,9 @@ function trakt($settings, $exceptions) {
    
             Foreach ($entry in $get_watchlist_response) {
                
-                if(-Not $trakt.title.Contains($entry.movie.title)) {
+                if(-Not $trakt.title.Contains($entry.movie.title)-and -not @($traktignored.title).Contains($entry.movie.title)) {
 
-                    $title = $entry.movie.title -replace('\.','')  ` -replace('\s','.') ` -replace(':','') ` -replace('`','') ` -replace("'",'') ` -replace('´','') ` -replace('!','') ` -replace('\?','')
+                    $title = $entry.movie.title -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
 
                     $query = -join($title,".",$entry.movie.year) 
 
@@ -227,9 +286,94 @@ function trakt($settings, $exceptions) {
             
                     $trakt += $entry.movie
 
+                    $traktignored_ += new-object psobject -property @{$entry.movie.title = @($entry.movie.title)}
+
                 }
             }
 
+    # handle ignored stuff
+
+            if(-Not (Test-Path .\query.log -PathType Leaf)) {
+                $fuck = $null
+                $fuck | Export-Clixml -Path .\query.log  
+            }
+
+            $traktignored_old = Import-Clixml -Path .\query.log
+
+            foreach($old in $traktignored_old){
+        
+                $oldtitle = $old  | Get-Member -MemberType NoteProperty | select -ExpandProperty Name
+
+                $traktignored_ | Where-Object {( $_ | Get-Member -MemberType NoteProperty | select -ExpandProperty Name) -eq $oldtitle} |  % { $_.$oldtitle += $old.$oldtitle }
+        
+            }
+
+            foreach($ignoredshow in $traktignored_){
+    
+                $shownames = $ignoredshow | Get-Member -MemberType NoteProperty | select -ExpandProperty Name
+
+                    foreach($name in $shownames) {
+                
+                        $retries_ignoredshow = $ignoredshow.$name | group | Select -ExpandProperty Count
+
+                        if($retries_ignoredshow -gt 5){
+                            
+                            $shows = @()
+
+                            $movies = @()
+
+                            #remove show from query.log to allow re-enabling the search for the show.
+
+                            $traktignored_ | Where-Object {( $_ | Get-Member -MemberType NoteProperty | select -ExpandProperty Name) -eq $name} |  % {$_.$name = $null}
+
+                            #add show to trakt ignored list to ignore it until user removes it from the list
+
+                            $object = $trakt | Where-Object {$_.title -eq $name}
+
+                            $object_ = $object.ids
+
+                            $candidateProps = $object_.psobject.properties.Name
+
+                            $nonNullProps = $candidateProps.Where({ $null -ne $object_.$_ })
+
+                            $nonnullids = $object_ | Select-Object $nonNullProps
+
+                            if ($object.type.Contains("movie")){
+
+                                $ids= $nonnullids
+
+                                $movie_id = @{"ids"= $ids}
+
+                                $movies += $movie_id
+
+                            }
+        
+                            if($object.type.Contains("tv")) {
+
+                                $ids= $nonnullids 
+
+                                $show_id = @{"ids"= $ids}
+
+                                $shows += $show_id
+
+                            }
+
+                            $ignored_add = ConvertTo-Json -Depth 10 -InputObject @{
+                                movies=$movies
+                                shows=$shows
+                            }
+
+                            $post_ignored_add = Invoke-RestMethod -Uri "https://api.trakt.tv/users/me/lists/$ignored_list_id/items" -Method Post -Headers $Header -Body $ignored_add -SessionVariable traktsession
+
+                        }
+
+                    }
+            }
+      
+            $traktignored_ | Export-Clixml -Path .\query.log  
+
+
+     #add some more stuff
 
             Foreach ($object in $trakt){
 

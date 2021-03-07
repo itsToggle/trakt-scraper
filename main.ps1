@@ -39,7 +39,7 @@ $traktscraper = {
             
             Write-Output ";;;;;"
 
-            if($trakt.download_type.Contains("show")){
+            if($trakt.download_type.Contains("show") -or $trakt.download_type.Contains("movie")){
 
                 Sleep 10
 
