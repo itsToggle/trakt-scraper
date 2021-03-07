@@ -47,6 +47,7 @@ Im not a professional programmer. This script is only ment as a starting point f
     5. trakt:
                - Downloaded content is added to the trakt collection. Season packs are collected by episode. This way partial season packs work flawlessly.
                - Downloaded content is removed from the watchlist.
+               - If no torrent/filehoster upload was found after 5 retries, the show/movie in question is added to a trakt list called "Ignored". Items in this playlist will not be scraped for.
 
     
 # Getting started:
