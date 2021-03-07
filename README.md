@@ -1,6 +1,6 @@
 # Trakt-Scraper
 
-A Powershell script to manage your media collection through trakt, with torrent and filehoster scraping and debrid support.
+A Powershell script to manage your media collection through trakt, with torrent/filehoster scraping and debrid support.
 
 Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
 
