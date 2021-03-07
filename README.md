@@ -4,53 +4,60 @@ A Powershell script to manage your media collection through trakt, with torrent 
 
 Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
 
-# Disclaimer:
-    
-    Im not responsible for what content you download, as this script only has the capacity to act as a middle man between different services.
-    The script itself does not provide the ability search for media content. The script itself does not provide the ability to download media content. 
-    It only connects different services. This project is ment as a fun way to explore the programming of API's.
+## Disclaimer:
+***Im not responsible for what content you download**, as this script only has the capacity to act as a middle man between different services.
+The script itself **does not** provide the ability search for media content. The script itself **does not** provide the ability to download media content. 
+It only connects different services. **This project is ment as a fun way to explore the programming of API's**.*
 
-# What it does:
+## What it does:
+1. **trakt:**
+    - Your trakt collection is monitored for newly released content.
+    - Your watchlist acts as a download queue for content you havent collected.
     
-    1. trakt:
-               - Your trakt collection is monitored for newly released content.
-               - Your watchlist acts as a download queue for content you havent collected.
-    
-    2. queries for scraping:
-               - If new content is found, search queries for the scrapers are generated:
-               - for movies the query is:
-                    - title.year
-               - for shows, the following standard search queries are generated in the displayed order:
-                    - title.SXX             (season pack releases)
-                    - title.year.SXX        (season pack releases)    
-                    - title.SXXEXX          (epsiode releases)
-                    - title.year.SXXEXX     (episode releases)
-               - to allow for date-formatted releases (or any other release-format) exceptions can be made that overwrite the standart search queries.
+2. **queries for scraping:**
+    - If new content is found, the following search queries are generated in the displayed order:
+    - **movies**:
+        - title.year
+    - **shows**: 
+        - title.SXX             (season pack releases)
+        - title.year.SXX        (season pack releases)    
+        - title.SXXEXX          (epsiode releases)
+        - title.year.SXXEXX     (episode releases)
+        - **to allow for date-formatted releases (or any other release-format) exceptions can be made that overwrite the standart search queries.**
                  
-    3. scraping:
-               - torrents: for each search query, a scraper for rarbg, 1337x and magnetdl searches for the best quality/best seeded torrent
-               - filehosters: If no torrent is found, hdencode.com is scraped for each search query
-               
-               - The scrapers search for season packs first. If a season pack is found, its filelist is compiled.
-               - If the filelist contains the episode that is searched for and not the last episode that was collected, the release is accepted. 
-                 (This way partial season packs work as well as full season packs.)
-               - If no season pack is found, the scrapers search for episode releases.
+3. **scraping:**
+    - **torrents**: for each search query, a scraper for rarbg, 1337x and magnetdl searches for the best quality/best seeded torrent
+    - **filehosters**: If no torrent is found, hdencode.com is scraped for each search query
     
-    4. debrid: 
-               - Debrid Services (Real Debrid and Premiumize) are searched for a cached version of the scraped torrent
-               - If a cached version is found, the direct download link gets send to Aria2c, a download manager
-               - If no cached torrents are available, the best seeded torrent is added to a debrid service's download queue
-               - The download is monitored in the background. Once its available for direct download, it gets send to Aria2c
-               - Once added to Aria2c the torrent is deleted from the Debrid Service.
-               - finished Downloads are unrar'ed
-               
-    5. trakt:
-               - Downloaded content is added to the trakt collection. Season packs are collected by episode. This way partial season packs work flawlessly.
-               - Downloaded content is removed from the watchlist.
-               - If no torrent/filehoster upload was found after 5 retries, the show/movie in question is added to a trakt list called "Ignored". Items in this playlist will not be scraped for.
+    - **movies**:
+        - each movie release that was found by the scrapers is accepted.   
+    - **shows**:
+        - for each show release that was found by the scrapers, a filelist is compiled.
+        - the filelists are scanned for filenames that contain an episode in the format: **SXXEXX**
+            - *if a show is formatted via an exception, the filelists are ignored and all discovered releases are accepted.*
+        - **If the scan contains the episode that is searched for and not the last episode that was collected, the release is accepted.** 
+    
+4. **debrid:** 
+    - **torrents**:
+        - Debrid Services (Real Debrid and Premiumize) are searched for a cached version of the scraped torrent
+        - If a cached version is found, the direct download link gets send to Aria2c, a download manager
+            - If no cached torrents are available, the best seeded torrent is added to RealDebrids download queue
+            - **RealDebrid is monitored in the background. Once a torrent is available for direct download, the links are sent to Aria2c**
+        - Once added to Aria2c the torrent is deleted from the Debrid Service.
+        - **finished Downloads are unrar'ed**
+        
+    - **filehosters**:
+        - Realdebird is used to unrestrict the filehoster links that were found by the filehoster scraper.
+        - The direct download links are sent to Aria2c
+        - **finished Downloads are unrar'ed**
+      
+5. **trakt:**
+    - Downloaded content is added to the trakt collection. Season packs are collected by episode. This way partial season packs work flawlessly.
+    - Downloaded content is removed from the watchlist.
+    - **If no torrent/filehoster upload was found after 5 retries, the show/movie in question is added to a trakt list called "Ignored". Items in this playlist will not be scraped for.**
 
     
-# Getting started:
+## Getting started:
 
     0. What You need: 
             - A Trakt.tv Account
@@ -71,7 +78,7 @@ Im not a professional programmer. This script is only ment as a starting point f
             - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
     
 
-# Exceptions to Search-Queries:
+## Exceptions to Search-Queries:
 
     The Script now allows for exceptions to be made to the search queries of shows. 
     
@@ -107,18 +114,18 @@ Im not a professional programmer. This script is only ment as a starting point f
     
     Please do keep in mind that both the 'exceptions.txt' and the commands in it are executed. Beware of the commands you put in there.
     
-# WebUi:
+## WebUi:
 
 ![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
 
-# Known Bugs:
+## Known Bugs:
         
         - If an upcoming episode was recently announced, trakt is a little slow with providing the release date. My current release wait merhod attempts to download it right away.
         - The Script crashes if you select text in the consol window. No idea why that is...
         - Special Characters. Ive tried to think of every Character that could pop up in a Movie/Show Title, but I could always miss one.
 
 
-# Future To-Do's
+## Future To-Do's
             
         - More filehoster scrapers. HDEncode.com is pretty much the best, but there are some forums that have more releases. These could be accessable if a username and password are provided by the user.
         - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
