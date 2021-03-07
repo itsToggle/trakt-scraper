@@ -4,6 +4,11 @@ A Powershell script to manage your media collection through trakt, with torrent 
 
 Im not a professional programmer. This script is only ment as a starting point for very bored people who want a completely costomizable alternative to radarr/sonarr/flexget.
 
+## How it looks:
+
+![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
+
+
 ## Disclaimer:
 ***Im not responsible for what content you download**, as this script only has the capacity to act as a middle man between different services.
 The script itself **does not** provide the ability search for media content. The script itself **does not** provide the ability to download media content. 
@@ -57,25 +62,25 @@ It only connects different services. **This project is ment as a fun way to expl
     - **If no torrent/filehoster upload was found after 5 retries, the show/movie in question is added to a trakt list called "Ignored". Items in this playlist will not be scraped for.**
 
     
-## Getting started:
+# Getting started:
 
-    0. What You need: 
-            - A Trakt.tv Account
-            - A Real Debrid Account is mandatory. Without it the script wont work.
-            - (Premiumize Account) This is optional. It will improve the chances of finding a chached torrent.
-            - Aria2c
-            - WinRar
-    1. Trakt Preperation:
-            - Clean Up a little :)
-            - Everything in your collection will be monitored for new episodes.
-            - Everything in your watchlist (that isnt already in your collection) will be downloaded. 
-    2. First Launch:
-            - The main script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services, Aria2c and WinRar.
-    3. WebUI Setup:
-            - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
-            - https://stackoverflow.com/questions/4019466/httplistener-access-denied/4115328.
-            - The command in this case is: netsh http add urlacl url=http://+:8008/ user=YOUR-USERNAME-HERE
-            - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
+0. **What You need:** 
+    - A Trakt.tv Account
+    - A Real Debrid Account is mandatory. Without it the script wont work.
+    - (Premiumize Account) This is optional. It will improve the chances of finding a chached torrent.
+    - Aria2c
+    - WinRar
+1. **Trakt Preperation:**
+    - Clean Up a little :)
+    - *Everything* in your collection will be monitored for new episodes.
+    - *Everything* in your watchlist (that isnt already in your collection) will be downloaded. 
+2. **First Launch**:
+    - The main script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services, Aria2c and WinRar.
+3. **WebUI Setup**:
+    - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
+    - https://stackoverflow.com/questions/4019466/httplistener-access-denied/4115328.
+    - The command in this case is: netsh http add urlacl url=http://+:8008/ user=YOUR-USERNAME-HERE
+    - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
     
 
 ## Exceptions to Search-Queries:
@@ -114,9 +119,6 @@ It only connects different services. **This project is ment as a fun way to expl
     
     Please do keep in mind that both the 'exceptions.txt' and the commands in it are executed. Beware of the commands you put in there.
     
-## WebUi:
-
-![alt text](https://i.ibb.co/ZN9Gkgy/Screenshot-20210217-112410-Chrome.jpg)
 
 ## Known Bugs:
         
