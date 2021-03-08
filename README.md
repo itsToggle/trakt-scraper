@@ -53,7 +53,76 @@ It only connects different services. This project is ment as a fun way to explor
     - After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/". The consol window only updates if a Webrequest is recieved.
     
 
-# The Script's Procedure:
+# Flow Chart:
+                          ┌──────────────────┐     ┌──────────────────┐ +
+                          │  Trakt Calendar  │     │   Trakt Ignore   ◄───────────────────────┐
+                          └────────┬─────────┘     └─────────┬────────┘                       │
+                                   │ +                     + │                                │
+                          ┌────────▼─────────┐     ┌─────────▼────────┐ +                     │
+                          │ Trakt Watchlist  │     │ Trakt Collection ◄───────────────────────┼──────────┐
+                          └────────┬─────────┘     └─────────┬────────┘                       │          │
+                                   │                         │                                │          │
+                                   │     ┌─────────────┐     │                                │          │
+                                   │   + │   Content   │ -   │                                │          │
+                                   └─────►     to      ◄─────┘                                │          │
+                                         │   monitor   │                                      │          │
+                                         └──────┬──────┘                                      │          │
+                                                │ if                                          │          │
+                                            ┌───▼───┐ false             ┌─────────┐           │          │
+                                            │ Aired ├───────────────────► Monitor │           │          │
+                                            └───┬───┘                   └─────────┘           │          │
+                                                │ true                                        │          │
+                                       ┌────────▼────────┐                                    │          │
+                                       │Query  generation│                                    │          │
+                                       └────────┬────────┘                                    │          │
+                                                │                                             │          │
+                               ┌───────┐        │        ┌────────┐                           │          │
+            ┌──────────────────┤ Shows ├────────┴────────┤ Movies │                           │          │
+            │                  └───────┘                 └───┬────┘                           │          │
+            │ if                                             │                                │          │
+    ┌───────▼────────┐ false                           ┌─────▼──────┐                         │          │
+    │ Show found in  ├─────────────┐                   │ title.year │                         │          │
+    │ exceptions.txt │             │                   └─────┬──────┘                         │          │
+    └───────┬────────┘             │                         │                                │          │
+            │ true                 │                         │                                │          │
+    ┌───────▼────────┐   ┌─────────▼─────────┐               │                                │          │
+    │ External Query │   │ title.SXX         │               │                                │          │
+    └───────┬────────┘   │ title.year.SXX    │               │                                │          │
+            │            │ title.SXXEXX      │               │                                │          │
+            │            │ title.year.SXXEXX │               │                                │          │
+            │            └─────────┬─────────┘               │                                │          │
+            │                      │                         │                        ┌───────┴───────┐  │
+            │                   +  │     + ┌─────────┐ +     │                        │ If no release │  │
+            └─────────────────────►└───────► Scraper ◄───────┘                        │  found after  │  │
+                                           └────┬────┘                                │    5 runs     │  │
+                                                │                                     └───────▲───────┘  │
+                                       ┌────────┴────────┐                                    │          │
+                                       │ Torrent Scraper │                                    │          │
+                                       └────────┬────────┘                                    │          │
+                                                │ if                                          │          │
+                                       ┌────────▼────────┐ false   ┌────────────────────┐     │          │
+                                       │ Releases found  ├─────────► Filehoster Scraper │     │          │
+                                       └────────┬────────┘         └─────────┬──────────┘     │          │
+                                                │ true                       │ if             │          │
+                                           ┌────▼────┐              ┌────────┴────────┐ false │          │
+                                           │ Sort by │              │ Releases found  ├───────┘          │
+                                           │ Quality │              └────────┬────────┘                  │
+                                           │ Seeders │                       │ true                      │
+                                           └────┬────┘                       │                           │
+                                                │ if                         │                           │
+                                         ┌──────▼──────┐                ┌────┴────┐                      │
+                                   false │   Debrid    │                │ Sort by │                      │
+                                 ┌───────┤ Cache Check │                │ Quality │                      │
+                                 │       └──────┬──────┘                └────┬────┘                      │
+                                 │ +            │ true                       │                           │
+                          ┌──────▼─────┐   ┌────▼─────┐                      │                           │
+                          │ Add Debrid,│   │  Direct  ◄──────────────────────┘                           │
+                          │ Monitor in │   │ Download │                                                  │
+                          │ Background │   └────┬─────┘                                                  │
+                          └──────┬─────┘        │                                                        │
+                                 │           +  │                                                        │
+                                 └─────────────►└────────────────────────────────────────────────────────┘
+
 1. **trakt:**
     - Your trakt collection is monitored for newly released content.
     - Your watchlist acts as a download queue for content you havent collected.
