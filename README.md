@@ -29,6 +29,8 @@ It only connects different services. This project is ment as a fun way to explor
 | Customizable search exceptions (for date-formatted releases) | :white_check_mark: |
 | Unraring of finished downloads | :white_check_mark: |
 | WebUI | :white_check_mark: |
+| Jacket/a4kscrapers integration | :x: |
+| snahp.it/adit-HD integration | :x: |
 
 # Getting started:
 
