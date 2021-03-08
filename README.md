@@ -31,6 +31,8 @@ It only connects different services. This project is ment as a fun way to explor
 | WebUI | :white_check_mark: |
 | Jacket/a4kscrapers integration | :x: |
 | snahp.it/adit-HD integration | :x: |
+| Filehoster Scraper engages before a non-cached Torrent is added to debrid | :x: |
+| Console updates indepently from WebUI | :x: |
 
 # Getting started:
 
@@ -65,18 +67,18 @@ It only connects different services. This project is ment as a fun way to explor
                                    │     ┌─────────────┐     │                                │          │
                                    │   + │   Content   │ -   │                                │          │
                                    └─────►     to      ◄─────┘                                │          │
-                                         │   monitor   │                                      │          │
-                                         └──────┬──────┘                                      │          │
-                                                │ if                                          │          │
-                                            ┌───▼───┐ false             ┌─────────┐           │          │
-                                            │ Aired ├───────────────────► Monitor │           │          │
-                                            └───┬───┘                   └─────────┘           │          │
-                                                │ true                                        │          │
-                                       ┌────────▼────────┐                                    │          │
-                                       │Query  generation│                                    │          │
-                                       └────────┬────────┘                                    │          │
-                                                │                                             │          │
-                               ┌───────┐        │        ┌────────┐                           │          │
+                                   ▲     │   monitor   │                                      │          │
+                                   │ +   └──────┬──────┘                                      │          │
+                                   │            │ if                                          │          │
+                                   │  false ┌───▼───┐                                         │          │
+                                   └────────┤ Aired │                                         │          │
+                                            └───┬───┘                                         │ true     │
+                                                │ true                                ┌───────┴───────┐  │
+                                      ┌─────────▼─────────┐                     false │ If no release │  │
+                                      │ Query  generation ◄───────────────────────────┤  found after  │  │
+                                      └─────────┬─────────┘                           │    5 runs     │  │
+                                                │                                     └───────▲───────┘  │
+                               ┌───────┐        │        ┌────────┐                           │ if       │
             ┌──────────────────┤ Shows ├────────┴────────┤ Movies │                           │          │
             │                  └───────┘                 └───┬────┘                           │          │
             │ if                                             │                                │          │
@@ -91,11 +93,11 @@ It only connects different services. This project is ment as a fun way to explor
             │            │ title.SXXEXX      │               │                                │          │
             │            │ title.year.SXXEXX │               │                                │          │
             │            └─────────┬─────────┘               │                                │          │
-            │                      │                         │                        ┌───────┴───────┐  │
-            │                   +  │     + ┌─────────┐ +     │                        │ If no release │  │
-            └─────────────────────►└───────► Scraper ◄───────┘                        │  found after  │  │
-                                           └────┬────┘                                │    5 runs     │  │
-                                                │                                     └───────▲───────┘  │
+            │                      │                         │                                │          │
+            │                   +  │     + ┌─────────┐ +     │                                │          │
+            └─────────────────────►└───────► Scraper ◄───────┘                                │          │
+                                           └────┬────┘                                        │          │
+                                                │                                             │          │
                                        ┌────────┴────────┐                                    │          │
                                        │ Torrent Scraper │                                    │          │
                                        └────────┬────────┘                                    │          │
@@ -213,11 +215,3 @@ It only connects different services. This project is ment as a fun way to explor
         - If an upcoming episode was recently announced, trakt is a little slow with providing the release date. My current release wait merhod attempts to download it right away.
         - The Script crashes if you select text in the consol window. No idea why that is...
         - Special Characters. Ive tried to think of every Character that could pop up in a Movie/Show Title, but I could always miss one.
-
-
-## Future To-Do's
-            
-        - More filehoster scrapers. HDEncode.com is pretty much the best, but there are some forums that have more releases. These could be accessable if a username and password are provided by the user.
-        - Maybe Add Scraper Support for Services like: Jacket, a4kscrapers,.. I will probaply stick with my own format.
-        - I cant get the Console to update indepently from the WebUI.
-        - Premiumize *is* currently searched for chached torrents, but torrents that arent cached are only added to RealDebrid and *not* Premiumize.
