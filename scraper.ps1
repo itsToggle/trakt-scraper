@@ -174,7 +174,7 @@ function scrape_hosters($query) {
             $unrestrict = Invoke-WebRequest $page -Method Post -Body $body -SessionVariable rarbgsession
             $files = [regex]::matches($unrestrict.ParsedHtml.body.innerText, "(?<=Filename\.*: ).*", "IgnoreCase").value
             $title = @($unrestrict.ParsedHtml).title.Split()[0]
-            $parts = @($unrestrict.ParsedHtml.Links).href -match 'rapidgator' #if you prefer nitroshare, go ahead and change this.
+            $parts = @($unrestrict.ParsedHtml.Links).href -match('rapidgator|uploaded')
             $item = new-object psobject -property @{title=($title.Replace('"','')); download = $parts; files = $files}
             $hdencode += $item
             Sleep 1

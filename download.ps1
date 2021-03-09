@@ -15,7 +15,7 @@ function download($trakt, $settings, $exceptions) {
 
 # Test-Objects
 #$trakt = new-object system.collections.arraylist
-#$trakt += new-object psobject -property @{status=1;download_type="show";query=@("MeatEater.S04");scraper=$null;cached=$null;hashed=$null;type="tv";next_season=4;next_episode=1;last_season=$null;last_episode=$null;year="2021";title="MeatEater"}
+#$trakt += new-object psobject -property @{status=1;download_type="movie";query=@("Raya.and.the.Last.Dragon.2021");scraper=$null;cached=$null;hashed=$null;type="movie";year="2021";title="Raya and the Last Dragon"}#;next_season=4;next_episode=1;last_season=$null;last_episode=$null}
 
     Foreach ($object in $trakt) {
 
@@ -78,6 +78,8 @@ function debrid_cached($object, $settings) {
                 Write-Output "(traktscraper) checking debrid for cached torrents"
 
                 $object | Add-Member -type NoteProperty -name service -Value $null -Force
+
+                $object | Add-Member -type NoteProperty -name cachedid -Value $null -Force
             
                 if($object.scraper.hashes -ne $null -and $object.status -le 2) {
 
@@ -117,6 +119,8 @@ function debrid_cached($object, $settings) {
                         }
 
                         $cachedid = $cachedid | Sort -Unique  
+
+                        $object.cachedid = $cachedid
 
                         $check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession                 
 
@@ -197,6 +201,8 @@ function debrid_torrent($object, $settings){
 
                     if($object.cached -ne $null) {                       
                         
+                        $cachedid = $object.cachedid
+
                         $magnet = $object.cached
                         
                         $cached_files = @{files = $cachedid -join ',' }
