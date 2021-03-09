@@ -1,4 +1,6 @@
-﻿function break_visual_captcha($url){
+﻿#not implemented yet
+ 
+ function break_visual_captcha($url){
     $header = @{
         apikey = "843a00bd7788957"
     }
