@@ -214,7 +214,7 @@ function trakt($settings, $exceptions) {
 
                         $episode = "{0:d2}" -f $show_next_episode  
 
-                        $title = $show.title  -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
+                        $title = $show.title  -replace('\.|:|`|´|!|\?|\s-|''','') ` -replace('\s+','.')
 
                         $year = $show.year
 
@@ -224,9 +224,9 @@ function trakt($settings, $exceptions) {
 
                         $release_day = "{0:d2}" -f (get-date $first_aired_long -Format "dd")
 
-                        $season_title = $entry0.title[$entrynumber] -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
+                        $season_title = $entry0.title[$entrynumber] -replace('\.|:|`|´|!|\?|\s-|''','') ` -replace('\s+','.')
 
-                        $episode_title = $entry1.title -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
+                        $episode_title = $entry1.title -replace('\.|:|`|´|!|\?|\s-|''','') ` -replace('\s+','.')
 
                         $show.download_type = "show"
 
@@ -274,7 +274,7 @@ function trakt($settings, $exceptions) {
                
                 if(-Not $trakt.title.Contains($entry.movie.title)-and -not @($traktignored.title).Contains($entry.movie.title)) {
 
-                    $title = $entry.movie.title -replace('\.|:|`|´|!|\?|-|''','') ` -replace('\s+','.')
+                    $title = $entry.movie.title -replace('\.|:|`|´|!|\?|\s-|''','') ` -replace('\s+','.')
 
                     $query = -join($title,".",$entry.movie.year) 
 
@@ -391,6 +391,6 @@ function trakt($settings, $exceptions) {
 
 }
 
-#$settings = Import-Clixml -Path .\parameters.xml
+$settings = Import-Clixml -Path .\parameters.xml
 
-#trakt $settings
+trakt $settings
