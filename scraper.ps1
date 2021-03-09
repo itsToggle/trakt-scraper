@@ -139,8 +139,7 @@ function scrape_hosters($query) {
     # files = Array of the contents filenames e.g. "title.s01e01.episode.title.mkv"
     # download = Array of the download links. Atm only one provider per download supported.
     #           
-    # download must be a magnet link, not a torrent file. 
-    # This is because the Script extracts the hash from the magnet link and explicitly posts a magnet link to the debrid services. 
+    # download must be a filehoster link, not a container file.
     # 
     
     #
@@ -181,9 +180,9 @@ function scrape_hosters($query) {
             Sleep 1
         }
         #output to log
-        $hdencode | select title,seeders,download | Out-File scraper.log -Append
+        $hdencode | select title,files,download | Out-File scraper.log -Append
         #output the required properties
-        $hdencode | select title,seeders,download
+        $hdencode | select title,files,download
    
     #other scraper
         #build the uri
@@ -412,3 +411,11 @@ function hoster($object, $exceptions) {
 
     Sleep 5
 }
+
+#$object = new-object psobject -property @{status=1;download_type="show";query=@("MeatEater.S04");scraper=$null;cached=$null;hashed=$null;type="tv";next_season=4;next_episode=1;last_season=$null;last_episode=$null;year="2021";title="MeatEater"}
+
+#$settings = Import-Clixml -Path .\parameters.xml
+
+#hoster $object $null
+
+#scrape_hosters "MeatEater.S04"

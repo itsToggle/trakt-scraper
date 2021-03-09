@@ -15,7 +15,7 @@ function download($trakt, $settings, $exceptions) {
 
 # Test-Objects
 #$trakt = new-object system.collections.arraylist
-#$trakt += new-object psobject -property @{status=1;download_type="show";query=@("MeatEater.S09");scraper=$null;cached=$null;hashed=$null;type="tv";next_season=9;next_episode=7;year="2021";title="MeatEater"}
+#$trakt += new-object psobject -property @{status=1;download_type="show";query=@("MeatEater.S04");scraper=$null;cached=$null;hashed=$null;type="tv";next_season=4;next_episode=1;last_season=$null;last_episode=$null;year="2021";title="MeatEater"}
 
     Foreach ($object in $trakt) {
 
@@ -29,7 +29,7 @@ function download($trakt, $settings, $exceptions) {
 
                     debrid_cached $object $settings
 
-                    if($object.scraper.hashes -eq $null){
+                    if($object.cached -eq $null){
                         
                         $files = @()
 
@@ -51,6 +51,12 @@ function download($trakt, $settings, $exceptions) {
 
                     }
 
+                    if($object.scraper.hoster -eq $null){
+
+                        debrid_torrent $object $settings
+                    
+                    }
+
                 }
 
             } 
@@ -69,7 +75,7 @@ function debrid_cached($object, $settings) {
 
                 . .\sync.ps1
 
-                Write-Output "(traktscraper) checking debrid for cached torrents..."
+                Write-Output "(traktscraper) checking debrid for cached torrents"
 
                 $object | Add-Member -type NoteProperty -name service -Value $null -Force
             
@@ -119,6 +125,8 @@ function debrid_cached($object, $settings) {
                             Write-Output "(traktscraper) Premiumize cache found"
                     
                             $object.service = "PM"
+                            
+                            $object.cached = $item.magnets
 							
 							$uri_pm = -join("https://www.premiumize.me/api/transfer/directdl?apikey=",$premiumize_api_key)
 							
@@ -173,6 +181,12 @@ function debrid_cached($object, $settings) {
 
                 }
 
+                
+            
+}
+
+function debrid_torrent($object, $settings){
+
                 #Add selected Magnet to RD
 
                 if($object.scraper.magnets -ne $null -and $object.status -le 3 -and $object.service -eq "RD") {
@@ -182,8 +196,17 @@ function debrid_cached($object, $settings) {
                     $cached_files = @{ files = "all" }
 
                     if($object.cached -ne $null) {                       
+                        
                         $magnet = $object.cached
+                        
                         $cached_files = @{files = $cachedid -join ',' }
+                        
+                        Write-Output "(traktscraper) adding cached torrent to debrid"
+
+                    }else{
+
+                        Write-Output "(traktscraper) adding non-cached torrent to debrid"
+
                     }
     
                     $Header = @{
@@ -232,7 +255,7 @@ function debrid_cached($object, $settings) {
                     $countRD++
             
                 }
-            
+
 }
 
 function debrid_monitor($trakt, $settings) {
@@ -328,7 +351,7 @@ function debrid_monitor($trakt, $settings) {
 
 function debrid_direct($object, $settings) {
             
-            Write-Output "(traktscraper) checking debrid for finished direct links"
+            Write-Output "(traktscraper) adding direct links to debrid"
 
             $type = $object.type
             $name = $object.scraper[0].title
@@ -357,4 +380,4 @@ function debrid_direct($object, $settings) {
 
 #$settings = Import-Clixml -Path .\parameters.xml
 
-#download $trakt $settings
+#download $trakt $settings $null
