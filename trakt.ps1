@@ -391,6 +391,6 @@ function trakt($settings, $exceptions) {
 
 }
 
-$settings = Import-Clixml -Path .\parameters.xml
+#$settings = Import-Clixml -Path .\parameters.xml
 
-trakt $settings
+#trakt $settings
