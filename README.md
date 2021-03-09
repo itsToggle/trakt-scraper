@@ -23,7 +23,9 @@ It only connects different services. This project is ment as a fun way to explor
 | Torrent Scraping [ rarbg, 1337x, magnetdl ]| :white_check_mark: |
 | Filehoster Scraping [ hdencode ] | :white_check_mark: |
 | Cache Check (instant downloads) for RealDebrid and Premiumize | :white_check_mark: |
-| Background Monitoring of Realdebrid | :white_check_mark: |
+| If no cached torrent is found, filehosters are scraped | :white_check_mark: |
+| If no cached torrent and no filehoster upload are found, the best quality torrent is added to RealDebrid | :white_check_mark: |
+| RealDebrid is monitored for finished torrents in the background | :white_check_mark: |
 | Season Pack support | :white_check_mark: |
 | Partial Season Pack Support | :white_check_mark: |
 | Customizable search exceptions (for date-formatted releases) | :white_check_mark: |
@@ -31,7 +33,6 @@ It only connects different services. This project is ment as a fun way to explor
 | WebUI | :white_check_mark: |
 | Jacket/a4kscrapers integration | :x: |
 | snahp.it/adit-HD integration | :x: |
-| Filehoster Scraper engages before a non-cached Torrent is added to debrid | :x: |
 | Console updates indepently from WebUI | :x: |
 
 # Getting started:
