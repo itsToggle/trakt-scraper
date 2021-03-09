@@ -109,9 +109,9 @@ It only connects different services. This project is ment as a fun way to explor
                      │    Hoster     │         └───────┤    Torrent    │              │          │
                      │ Release found │         ▲       │ Release found │              │          │
                      └───┬───────┬───┘         │       └───────┬───────┘              │          │
-                   false │       │ true        │               │                      │          │
+                   false │       │ true        │               │ true                 │          │
                      ┌───┘       └───┐         │               │                      │          │
-                     │               │         │               │ true                 │          │
+                     │               │         │               │                      │          │
                      │          ┌────▼────┐    │          ┌────▼────┐                 │          │
                      │          │ Sort by │    │          │ Sort by │                 │          │
                      │          │ Quality │    │          │ Quality │                 │          │
