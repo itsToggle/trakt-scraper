@@ -16,7 +16,7 @@ function download($trakt, $settings, $exceptions) {
 # Test-Objects
 #$trakt = new-object system.collections.arraylist
 #$trakt += new-object psobject -property @{status=1;download_type="movie";query=@("Raya.and.the.Last.Dragon.2021");scraper=$null;cached=$null;hashed=$null;type="movie";year="2021";title="Raya and the Last Dragon"}#;next_season=4;next_episode=1;last_season=$null;last_episode=$null}
-
+#$settings = Import-Clixml -Path .\parameters.xml
     Foreach ($object in $trakt) {
 
                 $object | Add-Member -type NoteProperty -name files -Value $null -Force
@@ -120,7 +120,21 @@ function debrid_cached($object, $settings) {
 
                         $cachedid = $cachedid | Sort -Unique  
 
-                        $object.cachedid = $cachedid
+                        for($i=0; $i -lt $cachedid.length; $i++) {
+                            $id = @($cachedid)[$i]
+                            [string]$filename = $fuck.$hashstring.rd.$id.filename | Sort -Unique  
+                            if($filename.Contains(".txt") -or $filename.Contains(".exe") -or $filename.Contains(".nfo")){
+                                $cachedid[$i]=$null
+                            }
+                        }
+
+                        $object.cachedid = $null
+
+                        foreach($entry in $cachedid){
+                            if($entry -ne $null){
+                                $object.cachedid += $entry
+                            }
+                        }
 
                         $check_cache_PM = Invoke-RestMethod -Uri $body_pm -Method Get -SessionVariable premiumizesession                 
 
@@ -156,7 +170,7 @@ function debrid_cached($object, $settings) {
 
                             break
 
-                        }elseif([int]$check_cache_RD.RawContentLength -gt [int]"60") {
+                        }elseif($object.cachedid.length -ge 1) {
 
                             Write-Output "(traktscraper) RealDebrid cache found"
 
@@ -387,3 +401,4 @@ function debrid_direct($object, $settings) {
 #$settings = Import-Clixml -Path .\parameters.xml
 
 #download $trakt $settings $null
+

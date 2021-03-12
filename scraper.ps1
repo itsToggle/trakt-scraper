@@ -156,13 +156,13 @@ function scrape_hosters($query) {
         
     #hdencode
         #build the uri
-        $uri = -join ('https://hdencode.com/?s=', $query)
+        $uri = -join ('https://hdencode.org/?s=', $query)
         #make the api call
         $response = Invoke-WebRequest $uri -SessionVariable rarbgsession
         #The links are in subpages
         $querysubpage = $query.replace('.','-')
         $response = $response.ParsedHTML.body.getElementsByClassName("item_2 items")[0].innerHTML
-        $subpages = [regex]::matches($response, "(https://hdencode.com/$querysubpage).*?(?=`")", "IgnoreCase").value | Select -Unique
+        $subpages = [regex]::matches($response, "(https://hdencode.org/$querysubpage).*?(?=`")", "IgnoreCase").value | Select -Unique
         $hdencode = new-object system.collections.arraylist
         foreach($page in $subpages) {
             #the links are hidden behind some recaptcha shit. This is easily circumvented with a little use of fiddler. The precise post request can be captured this way.
