@@ -31,9 +31,10 @@ It only connects different services. This project is ment as a fun way to explor
 | Customizable search exceptions (for date-formatted releases) | :white_check_mark: |
 | Unraring of finished downloads | :white_check_mark: |
 | WebUI | :white_check_mark: |
-| [hdencode]: Atm only rapidgator.net and uploaded.net links are accepted| :x: |
-| Jacket/a4kscrapers integration | :x: |
-| snahp.it/adit-HD integration | :x: |
+| [torrents]: Jacket/a4kscrapers integration | :x: |
+| [filehosters]: snahp.it/adit-HD integration | :x: |
+| [filehosters]: [hdencode]: Atm only rapidgator.net and uploaded.net links are accepted| :x: |
+| [filehosters]: Perform an "alive test" before accepting release links | :x: |
 | Console updates indepently from WebUI | :x: |
 
 # Getting started:
