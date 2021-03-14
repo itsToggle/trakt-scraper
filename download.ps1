@@ -15,7 +15,7 @@ function download($trakt, $settings, $exceptions) {
 
 # Test-Objects
 #$trakt = new-object system.collections.arraylist
-#$trakt += new-object psobject -property @{status=1;download_type="movie";query=@("Raya.and.the.Last.Dragon.2021");scraper=$null;cached=$null;hashed=$null;type="movie";year="2021";title="Raya and the Last Dragon"}#;next_season=4;next_episode=1;last_season=$null;last_episode=$null}
+#$trakt += new-object psobject -property @{status=1;download_type="movie";query=@("For.All.Mankind.S02E03");scraper=$null;cached=$null;hashed=$null;type="show";year="2020";title="For All Mankind";next_season=2;next_episode=3;last_season=$null;last_episode=$null}
 #$settings = Import-Clixml -Path .\parameters.xml
     Foreach ($object in $trakt) {
 
@@ -128,7 +128,7 @@ function debrid_cached($object, $settings) {
                             }
                         }
 
-                        $object.cachedid = $null
+                        $object.cachedid = @()
 
                         foreach($entry in $cachedid){
                             if($entry -ne $null){
