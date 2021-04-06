@@ -41,7 +41,7 @@ It only connects different services. This project is ment as a fun way to explor
 
 0. **What You need:** 
     - A Trakt.tv Account
-    - A Real Debrid Account is mandatory. Without it the script wont work.
+    - A Real Debrid Account is mandatory. Without it the script wont work. If you dont have one yet, create one here: http://real-debrid.com/?id=5708990
     - (Premiumize Account) This is optional. It will improve the chances of finding a chached torrent.
     - Aria2c
     - WinRar
@@ -51,6 +51,7 @@ It only connects different services. This project is ment as a fun way to explor
     - *Everything* in your watchlist (that isnt already in your collection) will be downloaded. 
 2. **First Launch**:
     - The main script will ask for the needed inputs on the first start. You will need to connect it to Trakt.tv, your Debrid Services, Aria2c and WinRar.
+    - You can find your Real-Debrid API key at: https://real-debrid.com/apitoken
 3. **WebUI Setup**:
     - The Script runs a local WebUI. The local server needs a netsh command to function, which is explained in this post here: 
     - https://stackoverflow.com/questions/4019466/httplistener-access-denied/4115328.
