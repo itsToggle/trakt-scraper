@@ -36,6 +36,7 @@ It only connects different services. This project is ment as a fun way to explor
 | [filehosters]: [hdencode]: Atm only rapidgator.net and uploaded.net links are accepted| :x: |
 | [filehosters]: Perform an "alive test" before accepting release links | :x: |
 | Console updates indepently from WebUI | :x: |
+| Stop Scripts high RAM usage and random downloads after long runtime | :x: |
 
 # Getting started:
 
