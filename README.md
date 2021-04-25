@@ -22,6 +22,7 @@ It only connects different services. This project is ment as a fun way to explor
 | Display time till release |  :white_check_mark: |
 | Torrent Scraping [ rarbg, 1337x, magnetdl ]| :white_check_mark: |
 | Filehoster Scraping [ hdencode ] | :white_check_mark: |
+| ClicknLoad (DLC) functionality for manual filehoster downloads | :white_check_mark: |
 | Cache Check (instant downloads) for RealDebrid and Premiumize | :white_check_mark: |
 | If no cached torrent is found, filehosters are scraped | :white_check_mark: |
 | If no cached torrent and no filehoster upload are found, the best quality torrent is added to RealDebrid | :white_check_mark: |
