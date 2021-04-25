@@ -6,6 +6,8 @@
 
 . .\unrar.ps1
 
+. .\cnl.ps1
+
 $traktscraper = {
 
     $settings = $args[0]
@@ -108,6 +110,8 @@ if(-Not (Test-Path .\parameters.xml -PathType Leaf)) {
     Start-Job -Name UnRar -ScriptBlock $unrar -ArgumentList $settings, $pwd
 
     Start-Job -Name TraktScraper -ScriptBlock $traktscraper -ArgumentList $settings, $pwd, $exceptions
+
+    Start-Job -Name CnL -ScriptBlock $cnl -ArgumentList $settings, $pwd
 
     $http = [System.Net.HttpListener]::new()
 

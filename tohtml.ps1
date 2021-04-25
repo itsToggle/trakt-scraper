@@ -1,48 +1,4 @@
-﻿        #------------------------------------------------------------------------------
-		# Copyright 2006-2007 Adrian Milliner (ps1 at soapyfrog dot com)
-		# http://ps1.soapyfrog.com
-		#
-		# This work is licenced under the Creative Commons 
-		# Attribution-NonCommercial-ShareAlike 2.5 License. 
-		# To view a copy of this licence, visit 
-		# http://creativecommons.org/licenses/by-nc-sa/2.5/ 
-		# or send a letter to 
-		# Creative Commons, 559 Nathan Abbott Way, Stanford, California 94305, USA.
-		#------------------------------------------------------------------------------
-
-		# $Id: get-bufferhtml.ps1 162 2007-01-26 16:30:12Z adrian $
-
-		#------------------------------------------------------------------------------
-		# This script grabs text from the console buffer and outputs to the pipeline
-		# lines of HTML that represent it.
-		#
-		# Usage: get-bufferhtml [args]
-		#
-		# Where args are:
-		#
-		# -last n       - how many lines back from current line to grab
-		#                 default is (effectively) everything
-		# -all          - grab all lines in console, overrides -last
-		# -trim         - trims blank space from the right of each line
-		#                 this is ok unless you have lots of text with
-		#                 varying background colours
-		# -font s       - optional css font name. default is nothing which
-		#                 means the browser will use whatever is default for a
-		#                 <pre> tag. "Courier New" is quite a good alternative
-		# -fontsize s   - optional css font size, eg "9pt" or "80%"
-		# -style s      - optional addition css, eg "overflow:hidden"
-		# -palette p    - choose a colour palette, one of:
-		#                 "powershell" normal for a PowerShell window (ie with
-		#                              strange colours for darkmagenta and darkyellow
-		#                 "standard"   normal ansi colours as used by a standard
-		#                              cmd.exe session
-		#                 "print"      like powershell, but with colours handy
-		#                              for printing where you want to save ink.
-		#
-		# The output is one large wrapped <pre> tag to keep whitespace intact.
-		#
-
-function tohtml {
+﻿function tohtml {
 
 	    param(
 		  [int]$last = 50000,             
