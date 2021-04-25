@@ -34,7 +34,7 @@ It only connects different services. This project is ment as a fun way to explor
 | WebUI | :white_check_mark: |
 | [filehosters]: Integration of filecrypt.cc and similar container sites | :x: |
 | [filehosters]: Perform an "alive test" before accepting release links | :x: |
-| Prompt captchas that cant be circumvented to user | :x: |
+| Prompt captchas that cant be bypassed to user | :x: |
 | Console updates indepently from WebUI | :x: |
 | Stop Scripts high RAM usage and random downloads after long runtime | :x: |
 
