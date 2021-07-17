@@ -17,6 +17,22 @@ of how the WebUI might look and are fabricated by inserting example text into th
 ![alt text](https://i.ibb.co/DCwchD1/Screenshot-2021-07-17-160029.png)
 ![alt text](https://i.ibb.co/8DPXHrC/Screenshot-2021-07-17-155950.png)
 
+# How it works:
+
+**1) Trakt:**
+  - Your Trakt Collection is monitored for new Content.
+  - Your Trakt Watchlist is monitored for content that you havent collected.
+
+**2) Scraper:**
+  - If new content is found, selected Torrent and Filehoster sources are scraped.
+  - Releases are checked for instant availability
+     - If instant available releases are found, the best release (according to the Ranking settings) is directly downloaded.
+     - If no instant available releases are found, the best uncached release (according to the Ranking settings) is added to RealDebrid.
+  - Once an uncached release has finished downloading on RealDebrid, it is directly downloaded.
+
+**3) Trakt:**
+  - Content is marked as collected
+
 # Getting started:
 
 0. **What You need:** 
