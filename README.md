@@ -7,7 +7,8 @@ Im not a professional programmer. This script is only ment as a starting point f
 ## Disclaimer:
 ***Im not responsible for what content you download, as this script only has the capacity to act as a middle man between different services.
 The script itself does not provide the ability search for media content. The script itself does not provide the ability to download media content. 
-It only connects different services. This project is ment as a fun way to explore the programming of API's. The pictures shown here are merely examples of how the WebUI might look and are fabricated by inserting example text into the html files. ***
+It only connects different services. This project is ment as a fun way to explore the programming of API's. The pictures shown here are merely examples 
+of how the WebUI might look and are fabricated by inserting example text into the html files.**
 
 ## How it looks:
 
