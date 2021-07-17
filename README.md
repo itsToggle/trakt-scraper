@@ -49,9 +49,10 @@ of how the WebUI might look and are fabricated by inserting example text into th
     - You can find your Real-Debrid API key at: https://real-debrid.com/apitoken
 3. **After all that is done, start the script and head over to "http://YOUR-PC-NAME-HERE:8008/".**
 
-(4.) For now, if you want the Cover Pictures to show;
+
+4. (For now, if you want the Cover Pictures to show;)
     - You need to enter your tmdb API Key in the webuisettings.xml
-(5.) For now, If you want to use the ddlwarez scraper; 
+5. (For now, If you want to use the ddlwarez scraper;)
     - ddlwarez used hcaptcha, which is bypassed by their friendly accessability Cookie.
     - To get an accessability Cookie, you need to request one on their Website.
     - You will receive a Link via e-mail. Enter the accessability Key of that Link in the webuisettings.xml
