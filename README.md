@@ -30,6 +30,11 @@ of how the WebUI might look and are fabricated by inserting example text into th
      - If no instant available releases are found, the best uncached release (according to the Ranking settings) is added to RealDebrid.
   - Once an uncached release has finished downloading on RealDebrid, it is directly downloaded.
 
+**3) Other Services**
+  - Downloaded archives are unrared automatically. Archives are deleted after download.
+  - Easily add manual downloads on the WebUi.
+  - A CNL Listener is running in the background
+
 **3) Trakt:**
   - Content is marked as collected
 
